@@ -12,14 +12,14 @@ You're juggling Claude, Gemini, and GPT. Configuring workflows. Setting up auth 
 We fixed that. This is a zero-compromise, almost-free AI coding environment that actually ships. 
 Install the stack. Run `opencode`. Done.
 
-### For Humans
-Paste this prompt to your LLM agent (Claude, ChatGPT, Cursor, etc.):
+### For LLM Agents
+Feed this prompt to your AI assistant (Claude, ChatGPT, Cursor, etc.):
 ```text
 Install and configure the opencode Ultimate Stack by following the instructions here: https://raw.githubusercontent.com/aamohmd/opencode-ultimate-setup/main/README.md
 ```
 
-### For LLM Agents
-Fetch the setup script and run it:
+### For Humans
+Run these commands in your terminal to set everything up:
 ```bash
 git clone https://github.com/aamohmd/opencode-ultimate-setup.git
 cd opencode-ultimate-setup
