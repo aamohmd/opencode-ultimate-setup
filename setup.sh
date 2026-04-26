@@ -55,21 +55,14 @@ fi
 # ─── Configuration ─────────────────────────────────────────────────────────
 step "Applying Configurations"
 
-if [ -f "configs/oh-my-openagent/.openagentrc" ]; then
-  cp configs/oh-my-openagent/.openagentrc ~/.openagentrc
-  ok "oh-my-openagent config applied"
-fi
-
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"
-if [ -f "configs/opencode.json" ] && [ ! -f "$OPENCODE_CONFIG_DIR/config.json" ]; then
-  cp configs/opencode.json "$OPENCODE_CONFIG_DIR/config.json"
-  ok "opencode config applied"
-fi
 
-if [ -f "configs/openrouter.env" ] && [ ! -f ".env" ]; then
-  cp configs/openrouter.env .env
-  warn "Created .env from template. Please fill in your API keys."
+if [ -f "opencode.json" ]; then
+  cp opencode.json "$OPENCODE_CONFIG_DIR/opencode.json"
+  ok "opencode global config applied (~/.config/opencode/opencode.json)"
+else
+  warn "opencode.json not found in the current directory"
 fi
 
 set -a
