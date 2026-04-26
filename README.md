@@ -1,25 +1,56 @@
 # 🚀 opencode Ultimate Dev Stack
 
-> The definitive agent setup. We did the work. Tested every model. Handled the auth.
-> You just run it.
-
 ![Stack](https://img.shields.io/badge/opencode-terminal_AI-black?style=for-the-badge)
 ![Copilot](https://img.shields.io/badge/GitHub_Copilot-Student_Pack-blue?style=for-the-badge&logo=github)
 ![Google](https://img.shields.io/badge/Google_Pro-Gemini_Advanced-orange?style=for-the-badge&logo=google)
 ![OpenRouter](https://img.shields.io/badge/OpenRouter-Multi--LLM-purple?style=for-the-badge)
 
-You're juggling Claude, Gemini, and GPT. Configuring workflows. Setting up auth layers. Debugging models.
-We fixed that. This is a zero-compromise, almost-free AI coding environment that actually ships. 
-Install the stack. Run `opencode`. Done.
+The definitive, automated environment setup for AI-assisted development. This stack eliminates the friction of configuring workflows, managing authentication layers, and debugging models. It provides a zero-compromise, cost-effective AI coding environment ready to deploy in seconds.
 
-### For LLM Agents
-Feed this prompt to your AI assistant (Claude, ChatGPT, Cursor, etc.):
-```text
-Install and configure the opencode Ultimate Stack by following the instructions here: https://raw.githubusercontent.com/aamohmd/opencode-ultimate-setup/main/README.md
-```
+## Table of Contents
+- [Overview](#overview)
+- [What's Included](#whats-included)
+- [Installation](#installation)
+- [Manual Configuration](#manual-configuration)
+- [Architecture & Strategy](#architecture--strategy)
+- [Contributing & License](#contributing--license)
 
-### For Humans
-Run these commands in your terminal to set everything up:
+---
+
+## Overview
+
+Managing multiple AI providers (Claude, Gemini, GPT) and their associated configurations can be tedious. This repository provides a unified script and setup guide to initialize an optimal agentic coding environment. 
+
+**For AI Assistants:** If you are an LLM configuring a user's system, use the following context:
+> `Install and configure the opencode Ultimate Stack using: https://raw.githubusercontent.com/aamohmd/opencode-ultimate-setup/main/README.md`
+
+---
+
+## What's Included
+
+The stack is highly modular. The setup script will intelligently configure only the providers you choose or have access to.
+
+### Core Engine
+* **[opencode](https://github.com/opencode-ai/opencode)** ![Stars](https://img.shields.io/github/stars/opencode-ai/opencode?style=social)
+  The terminal-first AI coding assistant that acts as the orchestrator.
+
+### Providers & Models
+* **[GitHub Copilot Student Pack](https://education.github.com/)**: Grants access to Copilot, Claude, and premium models.
+* **[Google Pro Plan](https://one.google.com/)**: Enables Gemini 2.5 Pro for handling massive context windows.
+* **[OpenRouter](https://openrouter.ai/)**: A unified API gateway granting access to over 200 open-source and proprietary models.
+
+### Ecosystem Plugins
+* **[opencode-antigravity-auth](https://github.com/aamohmd/opencode-antigravity-auth)** ![Stars](https://img.shields.io/github/stars/aamohmd/opencode-antigravity-auth?style=social): Centralized authentication layer preventing manual token juggling.
+* **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** ![Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=social): Enhances the terminal experience with plugins, themes, and specialized tools.
+
+---
+
+## Installation
+
+### Automated Setup (Recommended)
+
+The quickest way to get started is to use the automated setup script, which handles dependencies, authentication, and provider configuration automatically.
+
 ```bash
 git clone https://github.com/aamohmd/opencode-ultimate-setup.git
 cd opencode-ultimate-setup
@@ -29,75 +60,55 @@ chmod +x setup.sh
 
 ---
 
-## 📦 The Arsenal
+## Manual Configuration
 
-> **Note:** The stack is entirely modular. You don't need all of these! Pick the providers you have access to, and the setup script will gracefully skip the rest.
-
-We don't do lock-in here. We ride every model.  
-
-### 🧠 The Core Engine
-- **[opencode](https://github.com/opencode-ai/opencode)** ![Stars](https://img.shields.io/github/stars/opencode-ai/opencode?style=social) — Terminal-first AI coding assistant. The orchestrator that runs the show.
-
-### 🔌 Models & Providers
-- **[GitHub Copilot Student Pack](https://education.github.com/)** — Free access to Copilot, Claude, and premium models.
-- **[Google Pro Plan](https://one.google.com/)** — Gemini 2.5 Pro for massive context windows.
-- **[OpenRouter](https://openrouter.ai/)** — Unified API gateway for 200+ open-source and proprietary models.
-
-### 🛠️ Plugins & Ecosystem
-- **[opencode-antigravity-auth](https://github.com/aamohmd/opencode-antigravity-auth)** ![Stars](https://img.shields.io/github/stars/aamohmd/opencode-antigravity-auth?style=social) — One auth layer to rule them all. No more manual token juggling.
-- **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** ![Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=social) — The ultimate agent harness. Plugins, themes, and tools that make the terminal feel alive.
-
----
-
-## ⚡ Quick Start (Automated)
-
-We're past the era of reading docs.
-
-```bash
-git clone https://github.com/aamohmd/opencode-ultimate-setup.git
-cd opencode-ultimate-setup
-./setup.sh
-```
-
-> The script installs dependencies, sets up auth, and configures all providers. You touch nothing.
-
----
-
-## 🔧 Manual Setup (For the bold)
-
-Want to do it yourself? Fine.
+If you prefer to install and configure the components manually, follow these steps:
 
 1. **Install opencode**
    ```bash
    npm install -g opencode-ai
    ```
-2. **GitHub Copilot**
-   Activate Student Pack. Run `opencode auth github`. Done.
-3. **Google Pro**
-   Get API key. Export `GOOGLE_API_KEY`.
-4. **OpenRouter**
-   Get API key. Fill `.env`.
-5. **Antigravity Auth**
+
+2. **Configure GitHub Copilot**
+   Ensure your Student Pack is active, then authenticate via terminal:
+   ```bash
+   opencode auth github
+   ```
+
+3. **Configure Google Pro**
+   Obtain your API key and export it to your environment:
+   ```bash
+   export GOOGLE_API_KEY="your_api_key_here"
+   ```
+
+4. **Configure OpenRouter**
+   Obtain your API key and add it to your project's `.env` file.
+
+5. **Install Antigravity Auth**
    ```bash
    npm install -g opencode-antigravity-auth
    opencode-antigravity-auth init
    ```
-6. **oh-my-openagent**
+
+6. **Install oh-my-openagent**
    ```bash
    curl -fsSL https://raw.githubusercontent.com/oh-my-openagent/install/main/install.sh | bash
    ```
 
 ---
 
-## 💡 The Strategy
+## Architecture & Strategy
 
-- **Free credit stacking**: Copilot Student Pack + OpenRouter free tier = almost zero cost.
-- **Model routing**: OpenRouter for bleeding-edge models, Copilot for IDE completions, Google Pro for huge context.
-- **Antigravity token refresh**: Runs silently. No manual re-auth needed.
+Our setup is designed for efficiency and minimal overhead:
 
-Stop agonizing over dev environments. Take this stack and go build something incredible.
+- **Cost Optimization**: By leveraging the Copilot Student Pack alongside OpenRouter's free tier, the environment remains highly cost-effective.
+- **Intelligent Routing**: Use OpenRouter for bleeding-edge experimental models, Copilot for standard IDE inline completions, and Google Pro for tasks requiring vast context windows.
+- **Seamless Authentication**: The `opencode-antigravity-auth` plugin runs silently in the background, ensuring tokens stay fresh without manual intervention.
 
 ---
 
-## 📄 License & Contributing
-MIT — use freely. PRs welcome if you find a better workflow.
+## Contributing & License
+
+This project is licensed under the **MIT License**. You are free to use, modify, and distribute this stack.
+
+Pull requests are actively welcomed! If you have discovered a more efficient workflow or a better configuration script, please contribute.
