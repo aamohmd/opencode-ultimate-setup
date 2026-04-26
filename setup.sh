@@ -45,11 +45,11 @@ for pkg in "opencode-ai" "opencode-antigravity-auth"; do
   fi
 done
 
-if [ -d "$HOME/.oh-my-opencode" ]; then
-  ok "oh-my-opencode already installed"
+if [ -d "$HOME/.oh-my-openagent" ]; then
+  ok "oh-my-openagent already installed"
 else
-  npx oh-my-opencode install
-  ok "oh-my-opencode installed"
+  npx oh-my-openagent install
+  ok "oh-my-openagent installed"
 fi
 
 # ─── Configuration ─────────────────────────────────────────────────────────

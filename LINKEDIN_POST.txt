@@ -9,7 +9,7 @@ Here's the stack:
 🔵 Google Pro Plan — Gemini 2.5 Pro for infinite context
 🔀 OpenRouter — 200+ models through a single API key
 🔐 opencode-antigravity-auth — one auth layer to rule them all
-🎨 oh-my-opencode — plugins + themes that make the terminal feel alive
+🎨 oh-my-openagent — plugins + themes that make the terminal feel alive
 
 The result? I can switch between Claude, Gemini, GPT-4o, and open-source models in seconds. 
 One config. One auth. Zero friction. 
