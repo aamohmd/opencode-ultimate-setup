@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/schema/config.json",
+  "theme": "antigravity",
+  "providers": {
+    "copilot": {
+      "enabled": true,
+      "model": "gpt-4o",
+      "fallback": "openrouter"
+    },
+    "google": {
+      "enabled": true,
+      "model": "gemini-2.5-pro",
+      "apiKey": "${GOOGLE_API_KEY}"
+    },
+    "openrouter": {
+      "enabled": true,
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "apiKey": "${OPENROUTER_API_KEY}",
+      "defaultModel": "anthropic/claude-sonnet-4-5",
+      "models": [
+        "anthropic/claude-opus-4",
+        "anthropic/claude-sonnet-4-5",
+        "google/gemini-2.5-pro",
+        "openai/gpt-4o",
+        "meta-llama/llama-3.1-405b-instruct"
+      ]
+    }
+  },
+  "auth": {
+    "provider": "antigravity",
+    "autoRefresh": true,
+    "tokenCachePath": "~/.opencode/tokens"
+  },
+  "keybindings": {
+    "switchModel": "ctrl+shift+m",
+    "newSession": "ctrl+n",
+    "clearContext": "ctrl+l"
+  },
+  "ui": {
+    "showModelIndicator": true,
+    "showTokenUsage": true,
+    "syntaxHighlighting": true,
+    "theme": "antigravity"
+  },
+  "context": {
+    "maxTokens": 128000,
+    "autoTruncate": true,
+    "includeGitContext": true
+  }
+}
