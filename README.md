@@ -36,7 +36,7 @@ chmod +x setup.sh
 We don't do lock-in here. We ride every model.  
 
 ### 🧠 The Core Engine
-- **[opencode](https://github.com/opencode-ai/opencode)** — Terminal-first AI coding assistant. The orchestrator that runs the show.
+- **[opencode](https://github.com/opencode-ai/opencode)** ![Stars](https://img.shields.io/github/stars/opencode-ai/opencode?style=social) — Terminal-first AI coding assistant. The orchestrator that runs the show.
 
 ### 🔌 Models & Providers
 - **[GitHub Copilot Student Pack](https://education.github.com/)** — Free access to Copilot, Claude, and premium models.
@@ -44,8 +44,8 @@ We don't do lock-in here. We ride every model.
 - **[OpenRouter](https://openrouter.ai/)** — Unified API gateway for 200+ open-source and proprietary models.
 
 ### 🛠️ Plugins & Ecosystem
-- **[opencode-antigravity-auth](https://www.npmjs.com/package/opencode-antigravity-auth)** — One auth layer to rule them all. No more manual token juggling.
-- **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — The ultimate agent harness. Plugins, themes, and tools that make the terminal feel alive.
+- **[opencode-antigravity-auth](https://github.com/aamohmd/opencode-antigravity-auth)** ![Stars](https://img.shields.io/github/stars/aamohmd/opencode-antigravity-auth?style=social) — One auth layer to rule them all. No more manual token juggling.
+- **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** ![Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=social) — The ultimate agent harness. Plugins, themes, and tools that make the terminal feel alive.
 
 ---
 
