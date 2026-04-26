@@ -45,11 +45,11 @@ for pkg in "opencode-ai" "opencode-antigravity-auth"; do
   fi
 done
 
-if [ -d "$HOME/.oh-my-openagent" ]; then
-  ok "oh-my-openagent already installed"
+if [ -d "$HOME/.oh-my-opencode" ]; then
+  ok "oh-my-opencode already installed"
 else
-  curl -fsSL https://raw.githubusercontent.com/oh-my-openagent/install/main/install.sh | bash
-  ok "oh-my-openagent installed"
+  npx oh-my-opencode install
+  ok "oh-my-opencode installed"
 fi
 
 # ─── Configuration ─────────────────────────────────────────────────────────
@@ -57,13 +57,6 @@ step "Applying Configurations"
 
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"
-
-if [ -f "opencode.json" ]; then
-  cp opencode.json "$OPENCODE_CONFIG_DIR/opencode.json"
-  ok "opencode global config applied (~/.config/opencode/opencode.json)"
-else
-  warn "opencode.json not found in the current directory"
-fi
 
 set -a
 # shellcheck disable=SC1091

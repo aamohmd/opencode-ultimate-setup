@@ -45,7 +45,7 @@ The stack is highly modular. The setup script will intelligently configure only 
 ### Ecosystem Plugins
 * [![opencode-antigravity-auth](https://img.shields.io/badge/opencode--antigravity--auth-Plugin-black?style=for-the-badge&logo=github)](https://github.com/aamohmd/opencode-antigravity-auth) ![Stars](https://img.shields.io/github/stars/aamohmd/opencode-antigravity-auth?style=for-the-badge&color=yellow)
   Centralized authentication layer preventing manual token juggling.
-* [![oh-my-openagent](https://img.shields.io/badge/oh--my--openagent-Harness-black?style=for-the-badge&logo=github)](https://github.com/code-yeongyu/oh-my-openagent) ![Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=for-the-badge&color=yellow)
+* [![oh-my-opencode](https://img.shields.io/badge/oh--my--opencode-Harness-black?style=for-the-badge&logo=github)](https://github.com/code-yeongyu/oh-my-opencode) ![Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-opencode?style=for-the-badge&color=yellow)
   Enhances the terminal experience with plugins, themes, and specialized tools.
 
 ---
@@ -95,9 +95,9 @@ If you prefer to install and configure the components manually, follow these ste
    opencode-antigravity-auth init
    ```
 
-6. **Install oh-my-openagent**
+6. **Install oh-my-opencode**
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/oh-my-openagent/install/main/install.sh | bash
+   npx oh-my-opencode install
    ```
 
 ---
