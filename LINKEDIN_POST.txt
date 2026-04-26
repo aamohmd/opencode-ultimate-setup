@@ -14,7 +14,7 @@ Here's the stack:
 The result? I can switch between Claude, Gemini, GPT-4o, and open-source models in seconds. 
 One config. One auth. Zero friction. 
 
-We don't do lock-in here. We ride every model. 
+The best part? It's completely modular. You don't need to pay for all of these — just plug in the ones you have access to, and the setup gracefully handles the rest. We don't do lock-in here. We ride every model.
 
 I documented the entire setup — every script, every config. It just works.
 

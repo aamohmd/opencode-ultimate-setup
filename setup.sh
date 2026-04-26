@@ -106,43 +106,42 @@ opencode-antigravity-auth init || warn "Antigravity init failed"
 # ─── Auth Check ────────────────────────────────────────────────────────────
 step "Final Auth Status Check"
 
-ALL_GOOD=true
+ACTIVE_PROVIDERS=0
 
 if opencode auth status github 2>/dev/null | grep -q "authenticated"; then
-  ok "GitHub Copilot  — authenticated"
+  ok "GitHub Copilot  — active"
+  ((ACTIVE_PROVIDERS++))
 else
-  fail "GitHub Copilot  — NOT authenticated"
-  ALL_GOOD=false
+  warn "GitHub Copilot  — skipped (optional)"
 fi
 
 if [ -n "$GOOGLE_API_KEY" ]; then
-  ok "Google Pro      — API key set"
+  ok "Google Pro      — active"
+  ((ACTIVE_PROVIDERS++))
 else
-  fail "Google Pro      — key missing"
-  ALL_GOOD=false
+  warn "Google Pro      — skipped (optional)"
 fi
 
 if [ -n "$OPENROUTER_API_KEY" ]; then
-  ok "OpenRouter      — API key set"
+  ok "OpenRouter      — active"
+  ((ACTIVE_PROVIDERS++))
 else
-  fail "OpenRouter      — key missing"
-  ALL_GOOD=false
+  warn "OpenRouter      — skipped (optional)"
 fi
 
 if opencode-antigravity-auth status 2>/dev/null | grep -q "active"; then
   ok "Antigravity Auth — active"
 else
-  warn "Antigravity Auth — not active"
-  ALL_GOOD=false
+  warn "Antigravity Auth — not active (run opencode-antigravity-auth init)"
 fi
 
 echo ""
-if [ "$ALL_GOOD" = true ]; then
+if [ "$ACTIVE_PROVIDERS" -gt 0 ]; then
   echo -e "${BOLD}${GREEN}╔══════════════════════════════════════╗${RESET}"
   echo -e "${BOLD}${GREEN}║   ✔  Setup complete! You're ready.   ║${RESET}"
   echo -e "${BOLD}${GREEN}╚══════════════════════════════════════╝${RESET}"
   echo -e "Run ${CYAN}opencode${RESET} to start."
 else
-  echo -e "${BOLD}${YELLOW}⚠ Setup finished with some warnings. Check above.${RESET}"
+  echo -e "${BOLD}${YELLOW}⚠ Setup finished, but no providers are active. You will need to set up at least one.${RESET}"
 fi
 echo ""

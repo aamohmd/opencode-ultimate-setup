@@ -31,13 +31,21 @@ chmod +x setup.sh
 
 ## 📦 The Arsenal
 
-We don't do lock-in here. We ride every model. 
-- **opencode** — Terminal-first AI coding assistant. The orchestrator.
-- **GitHub Copilot Student Pack** — Free Copilot + Claude + premium models.
-- **Google Pro Plan** — Gemini 2.5 Pro for massive context windows.
-- **OpenRouter** — Unified API gateway for 200+ models.
-- **opencode-antigravity-auth** — One auth layer to rule them all. No more manual token juggling.
-- **oh-my-openagent** — Plugins + themes that make the terminal feel alive.
+> **Note:** The stack is entirely modular. You don't need all of these! Pick the providers you have access to, and the setup script will gracefully skip the rest.
+
+We don't do lock-in here. We ride every model.  
+
+### 🧠 The Core Engine
+- **[opencode](https://github.com/opencode-ai/opencode)** — Terminal-first AI coding assistant. The orchestrator that runs the show.
+
+### 🔌 Models & Providers
+- **[GitHub Copilot Student Pack](https://education.github.com/)** — Free access to Copilot, Claude, and premium models.
+- **[Google Pro Plan](https://one.google.com/)** — Gemini 2.5 Pro for massive context windows.
+- **[OpenRouter](https://openrouter.ai/)** — Unified API gateway for 200+ open-source and proprietary models.
+
+### 🛠️ Plugins & Ecosystem
+- **[opencode-antigravity-auth](https://www.npmjs.com/package/opencode-antigravity-auth)** — One auth layer to rule them all. No more manual token juggling.
+- **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** — The ultimate agent harness. Plugins, themes, and tools that make the terminal feel alive.
 
 ---
 
