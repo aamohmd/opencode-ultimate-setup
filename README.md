@@ -55,24 +55,6 @@ cd opencode-stack
 
 ---
 
-## 🔀 Magic Tools
-
-Everything below, you don't need to configure. It just works.
-
-### Model Switcher
-Swap models in seconds.
-```bash
-./scripts/model-switcher.sh
-```
-
-### Auth Check
-Verify your entire auth stack instantly.
-```bash
-./scripts/auth-check.sh
-```
-
----
-
 ## 🔧 Manual Setup (For the bold)
 
 Want to do it yourself? Fine.
