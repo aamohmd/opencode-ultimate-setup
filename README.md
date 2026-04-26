@@ -15,14 +15,14 @@ Install the stack. Run `opencode`. Done.
 ### For Humans
 Paste this prompt to your LLM agent (Claude, ChatGPT, Cursor, etc.):
 ```text
-Install and configure the opencode Ultimate Stack by following the instructions here: https://raw.githubusercontent.com/YOUR_USERNAME/opencode-stack/main/README.md
+Install and configure the opencode Ultimate Stack by following the instructions here: https://raw.githubusercontent.com/aamohmd/opencode-ultimate-setup/main/README.md
 ```
 
 ### For LLM Agents
 Fetch the setup script and run it:
 ```bash
-git clone https://github.com/YOUR_USERNAME/opencode-stack.git
-cd opencode-stack
+git clone https://github.com/aamohmd/opencode-ultimate-setup.git
+cd opencode-ultimate-setup
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -46,8 +46,8 @@ We don't do lock-in here. We ride every model.
 We're past the era of reading docs.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/opencode-stack.git
-cd opencode-stack
+git clone https://github.com/aamohmd/opencode-ultimate-setup.git
+cd opencode-ultimate-setup
 ./setup.sh
 ```
 
