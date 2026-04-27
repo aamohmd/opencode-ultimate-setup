@@ -177,6 +177,52 @@ if [ "$INSTALL_AUTH" = true ] || command -v opencode-antigravity-auth >/dev/null
 fi
 
 # ─── Final Auth Check ──────────────────────────────────────────────────────
-if [ -x "scripts/auth-check.sh" ]; then
-  ./scripts/auth-check.sh
+echo -e "\n${BLUE}${BOLD}▶ Final Auth Status Check${RESET}"
+
+set -a
+[ -f .env ] && source .env
+set +a
+
+ACTIVE_PROVIDERS=0
+
+if opencode auth status github 2>/dev/null | grep -q "authenticated"; then
+  success "GitHub Copilot  — active"
+  ((ACTIVE_PROVIDERS++))
+else
+  warn "GitHub Copilot  — skipped (optional)"
 fi
+
+if [ -n "$GOOGLE_API_KEY" ]; then
+  success "Google Pro      — active"
+  ((ACTIVE_PROVIDERS++))
+else
+  warn "Google Pro      — skipped (optional)"
+fi
+
+if [ -n "$OPENROUTER_API_KEY" ]; then
+  success "OpenRouter      — active"
+  ((ACTIVE_PROVIDERS++))
+else
+  warn "OpenRouter      — skipped (optional)"
+fi
+
+if command -v opencode-antigravity-auth >/dev/null 2>&1; then
+  if opencode-antigravity-auth status 2>/dev/null | grep -q "active"; then
+    success "Antigravity Auth — active"
+  else
+    warn "Antigravity Auth — not active (run opencode-antigravity-auth init)"
+  fi
+else
+  warn "Antigravity Auth — skipped (not installed)"
+fi
+
+echo ""
+if [ "$ACTIVE_PROVIDERS" -gt 0 ]; then
+  echo -e "${BOLD}${GREEN}╔══════════════════════════════════════╗${RESET}"
+  echo -e "${BOLD}${GREEN}║   ✔  Setup complete! You're ready.   ║${RESET}"
+  echo -e "${BOLD}${GREEN}╚══════════════════════════════════════╝${RESET}"
+  echo -e "Run ${CYAN}opencode${RESET} to start."
+else
+  echo -e "${BOLD}${YELLOW}⚠ Setup finished, but no providers are active. You will need to set up at least one.${RESET}"
+fi
+echo ""
