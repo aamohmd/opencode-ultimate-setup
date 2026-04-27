@@ -59,7 +59,11 @@ The quickest way to get started is to use the automated setup script, which hand
 ```bash
 git clone https://github.com/aamohmd/opencode-ultimate-setup.git
 cd opencode-ultimate-setup
-chmod +x setup.sh
+
+# Copy the env template and add your API keys
+cp configs/openrouter.env .env
+nano .env # or use your favorite editor
+
 ./setup.sh
 ```
 
@@ -80,14 +84,19 @@ If you prefer to install and configure the components manually, follow these ste
    opencode auth github
    ```
 
-3. **Configure Google Pro**
-   Obtain your API key and export it to your environment:
+3. **Configure API Providers**
+   Copy the environment template and add your API keys for Google and OpenRouter:
    ```bash
-   export GOOGLE_API_KEY="your_api_key_here"
+   cp configs/openrouter.env .env
+   nano .env
    ```
 
-4. **Configure OpenRouter**
-   Obtain your API key and add it to your project's `.env` file.
+4. **Apply Configurations**
+   Copy the baseline configurations to your system:
+   ```bash
+   mkdir -p ~/.config/opencode
+   cp configs/opencode.json ~/.config/opencode/opencode.json
+   ```
 
 5. **Install Antigravity Auth**
    ```bash

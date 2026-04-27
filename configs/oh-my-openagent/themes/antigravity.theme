@@ -1,0 +1,20 @@
+{
+  "name": "Antigravity",
+  "colors": {
+    "primary": "#00FF9D",
+    "secondary": "#7000FF",
+    "background": "#0A0A0B",
+    "text": "#E0E0E0",
+    "accent": "#FF0055",
+    "success": "#00FF9D",
+    "warning": "#FFB800",
+    "error": "#FF0055"
+  },
+  "typography": {
+    "fontFamily": "JetBrains Mono, Fira Code, monospace"
+  },
+  "ui": {
+    "borders": "rounded",
+    "promptString": "🚀 ❯"
+  }
+}

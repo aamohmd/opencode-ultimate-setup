@@ -55,8 +55,22 @@ fi
 # ─── Configuration ─────────────────────────────────────────────────────────
 step "Applying Configurations"
 
+# Opencode config
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"
+if [ -f "configs/opencode.json" ]; then
+  cp configs/opencode.json "$OPENCODE_CONFIG_DIR/opencode.json"
+  ok "opencode global config applied (~/.config/opencode/opencode.json)"
+fi
+
+# Oh My OpenAgent config
+OMA_CONFIG_DIR="$HOME/.oh-my-openagent"
+if [ -d "$OMA_CONFIG_DIR" ]; then
+  mkdir -p "$OMA_CONFIG_DIR/themes"
+  cp configs/oh-my-openagent/.openagentrc "$OMA_CONFIG_DIR/" 2>/dev/null || true
+  cp configs/oh-my-openagent/themes/antigravity.theme "$OMA_CONFIG_DIR/themes/" 2>/dev/null || true
+  ok "oh-my-openagent configs and theme applied"
+fi
 
 set -a
 # shellcheck disable=SC1091
@@ -72,62 +86,12 @@ else
   opencode auth github || warn "GitHub auth failed/skipped"
 fi
 
-step "Google Pro Auth"
-if [ -z "$GOOGLE_API_KEY" ]; then
-  warn "GOOGLE_API_KEY not set in .env"
-else
-  ok "GOOGLE_API_KEY found"
-fi
-
-step "OpenRouter Auth"
-if [ -z "$OPENROUTER_API_KEY" ]; then
-  warn "OPENROUTER_API_KEY not set in .env"
-else
-  ok "OPENROUTER_API_KEY found"
-fi
-
 step "Initializing Antigravity Auth"
 opencode-antigravity-auth init || warn "Antigravity init failed"
 
 # ─── Auth Check ────────────────────────────────────────────────────────────
-step "Final Auth Status Check"
-
-ACTIVE_PROVIDERS=0
-
-if opencode auth status github 2>/dev/null | grep -q "authenticated"; then
-  ok "GitHub Copilot  — active"
-  ((ACTIVE_PROVIDERS++))
+if [ -x "scripts/auth-check.sh" ]; then
+  ./scripts/auth-check.sh
 else
-  warn "GitHub Copilot  — skipped (optional)"
+  warn "Auth check script not found or not executable"
 fi
-
-if [ -n "$GOOGLE_API_KEY" ]; then
-  ok "Google Pro      — active"
-  ((ACTIVE_PROVIDERS++))
-else
-  warn "Google Pro      — skipped (optional)"
-fi
-
-if [ -n "$OPENROUTER_API_KEY" ]; then
-  ok "OpenRouter      — active"
-  ((ACTIVE_PROVIDERS++))
-else
-  warn "OpenRouter      — skipped (optional)"
-fi
-
-if opencode-antigravity-auth status 2>/dev/null | grep -q "active"; then
-  ok "Antigravity Auth — active"
-else
-  warn "Antigravity Auth — not active (run opencode-antigravity-auth init)"
-fi
-
-echo ""
-if [ "$ACTIVE_PROVIDERS" -gt 0 ]; then
-  echo -e "${BOLD}${GREEN}╔══════════════════════════════════════╗${RESET}"
-  echo -e "${BOLD}${GREEN}║   ✔  Setup complete! You're ready.   ║${RESET}"
-  echo -e "${BOLD}${GREEN}╚══════════════════════════════════════╝${RESET}"
-  echo -e "Run ${CYAN}opencode${RESET} to start."
-else
-  echo -e "${BOLD}${YELLOW}⚠ Setup finished, but no providers are active. You will need to set up at least one.${RESET}"
-fi
-echo ""

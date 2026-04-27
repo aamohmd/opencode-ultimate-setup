@@ -1,0 +1,13 @@
+{
+  "theme": "antigravity",
+  "plugins": [
+    "git",
+    "docker",
+    "npm"
+  ],
+  "preferences": {
+    "animations": true,
+    "showTimestamp": true,
+    "logLevel": "info"
+  }
+}
