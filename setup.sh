@@ -101,7 +101,7 @@ echo ""
 info "Select Ecosystem Plugins (Optional but Recommended)"
 
 INSTALL_AUTH=false
-if prompt_yes_no "Install opencode-antigravity-auth (Seamless Token Management)?"; then
+if prompt_yes_no "Install opencode-antigravity-auth (Antigravity Connection)?"; then
   spinner_task "Installing opencode-antigravity-auth" npm install -g opencode-antigravity-auth
   INSTALL_AUTH=true
 fi
