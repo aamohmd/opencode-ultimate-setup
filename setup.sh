@@ -146,7 +146,7 @@ if prompt_yes_no "Enable GitHub Copilot Integration?"; then
     success "GitHub is already authenticated.\n"
   else
     echo -e "${DIM}Opening browser for GitHub authentication...${RESET}"
-    opencode auth login github || warn "GitHub auth skipped."
+    opencode auth login -p "GitHub Copilot" || warn "GitHub auth skipped."
     echo ""
   fi
 fi
@@ -154,8 +154,11 @@ fi
 if prompt_yes_no "Configure Google Gemini Pro?"; then
   echo -e "${DIM}Get your key here: https://aistudio.google.com/app/apikey${RESET}"
   KEY=$(prompt_input "Enter your Google API Key (input hidden):")
+  
+  KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
+  
   if grep -q "^GOOGLE_API_KEY=" .env; then
-    sed "s/^GOOGLE_API_KEY=.*/GOOGLE_API_KEY=\"$KEY\"/" .env > .env.tmp && mv .env.tmp .env
+    sed "s|^GOOGLE_API_KEY=.*|GOOGLE_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env
   else
     echo "GOOGLE_API_KEY=\"$KEY\"" >> .env
   fi
@@ -165,8 +168,11 @@ fi
 if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
   echo -e "${DIM}Get your key here: https://openrouter.ai/settings/keys${RESET}"
   KEY=$(prompt_input "Enter your OpenRouter API Key (input hidden):")
+  
+  KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
+  
   if grep -q "^OPENROUTER_API_KEY=" .env; then
-    sed "s/^OPENROUTER_API_KEY=.*/OPENROUTER_API_KEY=\"$KEY\"/" .env > .env.tmp && mv .env.tmp .env
+    sed "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env
   else
     echo "OPENROUTER_API_KEY=\"$KEY\"" >> .env
   fi
@@ -178,8 +184,8 @@ if [ "$INSTALL_AUTH" = true ]; then
     success "Antigravity Auth is already configured.\n"
   else
     info "Initializing Antigravity Auth Layer..."
-    echo -e "${DIM}Please select 'Google' -> 'OAuth with Google (Antigravity)' from the menu.${RESET}"
-    opencode auth login || warn "Antigravity Auth skipped."
+    echo -e "${DIM}Opening browser for Google Antigravity authentication...${RESET}"
+    opencode auth login -p google -m "OAuth with Google (Antigravity)" || warn "Antigravity Auth skipped."
     echo ""
   fi
 fi

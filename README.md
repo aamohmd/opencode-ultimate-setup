@@ -57,10 +57,11 @@ The stack is highly modular. The setup script will intelligently configure only 
   High-performance CLI tool and visualization dashboard for tracking token usage and costs.
 
 ### Default System Prompts
-The core configuration includes custom system instructions ("instructions" parameter) out of the box. This provides:
-- Better response conciseness and less AI "fluff"
-- Strict security boundaries and better tool usage out of the gate
-- Proactive planning behaviors before executing complex tasks
+The core configuration includes custom system instructions based on **Andrej Karpathy's LLM coding guidelines**. This provides:
+- **Think Before Coding**: Explicit assumptions and pushing back on bad ideas
+- **Simplicity First**: Minimum viable code without over-engineering
+- **Surgical Changes**: Touching only what needs to be changed
+- **Goal-Driven Execution**: Verifiable success loops
 No extra setup is required!
 
 ---
@@ -108,7 +109,7 @@ If you prefer to install and configure the components manually, follow these ste
    Ensure your Student Pack is active, then authenticate via terminal:
 
    ```bash
-   opencode auth github
+   opencode auth login -p "GitHub Copilot"
    ```
 
 3. **Configure API Providers**
@@ -131,7 +132,7 @@ If you prefer to install and configure the components manually, follow these ste
 
    ```bash
    npm install -g opencode-antigravity-auth tokscale
-   opencode auth login
+   opencode auth login -p google -m "OAuth with Google (Antigravity)"
    ```
 
 6. **Install oh-my-openagent**
