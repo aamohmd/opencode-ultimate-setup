@@ -19,12 +19,12 @@ RESET='\033[0m'
 clear
 
 echo -e "${BLUE}${BOLD}"
-echo "   ____                   ____          _      "
-echo "  / __ \____  ___  ____  / __ \____  __| |____ "
-echo " / / / / __ \/ _ \/ __ \/ / / / __ \/ _  / __ \\"
-echo "/ /_/ / /_/ /  __/ / / / /_/ / /_/ / /_/ / /_/ /"
-echo "\____/ .___/\___/_/ /_/\____/\____/\__,_/\____/ "
-echo "    /_/                                         "
+echo "                                         __   "
+echo "  ____  ____  ___  ____  _________  ____/ /__ "
+echo " / __ \/ __ \/ _ \/ __ \/ ___/ __ \/ __  / _ \\"
+echo "/ /_/ / /_/ /  __/ / / / /__/ /_/ / /_/ /  __/"
+echo "\____/ .___/\___/_/ /_/\___/\____/\__,_/\___/ "
+echo "    /_/                                       "
 echo -e "${RESET}${DIM} ⚡ The Ultimate AI Agent Stack Initialization ⚡${RESET}\n"
 
 info()    { echo -e "${CYAN}❯${RESET} $1"; }
@@ -99,7 +99,7 @@ spinner_task "Installing opencode-antigravity-auth" npm install -g opencode-anti
 spinner_task "Installing tokscale" npm install -g tokscale
 
 if [ ! -d "$HOME/.oh-my-openagent" ]; then
-  spinner_task "Installing oh-my-openagent" npx --yes oh-my-openagent install
+  spinner_task "Installing oh-my-openagent" npx --yes oh-my-openagent install --no-tui --claude=no --openai=no --gemini=no --copilot=no --skip-auth
 fi
 echo ""
 
