@@ -142,16 +142,17 @@ info "Provider Authentication"
 touch .env
 
 if prompt_yes_no "Enable GitHub Copilot Integration?"; then
-  if opencode auth status github 2>/dev/null | grep -q "authenticated"; then
+  if opencode auth list 2>/dev/null | grep -i -q "github"; then
     success "GitHub is already authenticated.\n"
   else
     echo -e "${DIM}Opening browser for GitHub authentication...${RESET}"
-    opencode auth github || warn "GitHub auth skipped."
+    opencode auth login github || warn "GitHub auth skipped."
     echo ""
   fi
 fi
 
 if prompt_yes_no "Configure Google Gemini Pro?"; then
+  echo -e "${DIM}Get your key here: https://aistudio.google.com/app/apikey${RESET}"
   KEY=$(prompt_input "Enter your Google API Key (input hidden):")
   if grep -q "^GOOGLE_API_KEY=" .env; then
     sed -i.bak "s/^GOOGLE_API_KEY=.*/GOOGLE_API_KEY=\"$KEY\"/" .env && rm -f .env.bak
@@ -162,6 +163,7 @@ if prompt_yes_no "Configure Google Gemini Pro?"; then
 fi
 
 if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
+  echo -e "${DIM}Get your key here: https://openrouter.ai/settings/keys${RESET}"
   KEY=$(prompt_input "Enter your OpenRouter API Key (input hidden):")
   if grep -q "^OPENROUTER_API_KEY=" .env; then
     sed -i.bak "s/^OPENROUTER_API_KEY=.*/OPENROUTER_API_KEY=\"$KEY\"/" .env && rm -f .env.bak
@@ -185,7 +187,7 @@ set +a
 
 ACTIVE_PROVIDERS=0
 
-if opencode auth status github 2>/dev/null | grep -q "authenticated"; then
+if opencode auth list 2>/dev/null | grep -i -q "github"; then
   success "GitHub Copilot  — active"
   ((ACTIVE_PROVIDERS++))
 else
