@@ -64,7 +64,7 @@ spinner_task() {
   local pid=$!
   
   local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-  while kill -0 $pid 2>/dev/null; do
+  while kill -0 "$pid" 2>/dev/null; do
     local temp=${spinstr#?}
     printf "\r${CYAN}%c${RESET} ${msg}..." "$spinstr"
     local spinstr=$temp${spinstr%"$temp"}
@@ -72,7 +72,7 @@ spinner_task() {
   done
   
   local exit_code=0
-  wait $pid || exit_code=$?
+  wait "$pid" || exit_code=$?
   
   if [ $exit_code -eq 0 ]; then
     printf "\r${GREEN}✔${RESET} ${msg}... ${GREEN}Done!${RESET}       \n"
@@ -155,7 +155,7 @@ if prompt_yes_no "Configure Google Gemini Pro?"; then
   echo -e "${DIM}Get your key here: https://aistudio.google.com/app/apikey${RESET}"
   KEY=$(prompt_input "Enter your Google API Key (input hidden):")
   if grep -q "^GOOGLE_API_KEY=" .env; then
-    sed -i.bak "s/^GOOGLE_API_KEY=.*/GOOGLE_API_KEY=\"$KEY\"/" .env && rm -f .env.bak
+    sed "s/^GOOGLE_API_KEY=.*/GOOGLE_API_KEY=\"$KEY\"/" .env > .env.tmp && mv .env.tmp .env
   else
     echo "GOOGLE_API_KEY=\"$KEY\"" >> .env
   fi
@@ -166,7 +166,7 @@ if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
   echo -e "${DIM}Get your key here: https://openrouter.ai/settings/keys${RESET}"
   KEY=$(prompt_input "Enter your OpenRouter API Key (input hidden):")
   if grep -q "^OPENROUTER_API_KEY=" .env; then
-    sed -i.bak "s/^OPENROUTER_API_KEY=.*/OPENROUTER_API_KEY=\"$KEY\"/" .env && rm -f .env.bak
+    sed "s/^OPENROUTER_API_KEY=.*/OPENROUTER_API_KEY=\"$KEY\"/" .env > .env.tmp && mv .env.tmp .env
   else
     echo "OPENROUTER_API_KEY=\"$KEY\"" >> .env
   fi
