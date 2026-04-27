@@ -118,6 +118,19 @@ if prompt_yes_no "Install oh-my-openagent (Advanced Terminal Harness)?"; then
   fi
   INSTALL_OMA=true
 fi
+
+INSTALL_SNIP=false
+if prompt_yes_no "Install opencode-snip (Token Saver — cuts command output by 60-99%)?"; then
+  if command -v brew >/dev/null 2>&1; then
+    spinner_task "Installing snip CLI (via brew)" brew install edouard-claude/tap/snip
+  elif command -v go >/dev/null 2>&1; then
+    spinner_task "Installing snip CLI (via go)" go install github.com/edouard-claude/snip/cmd/snip@latest
+  else
+    warn "snip requires either Homebrew or Go to install. Skipping snip CLI install."
+    warn "Install manually: https://github.com/edouard-claude/snip"
+  fi
+  INSTALL_SNIP=true
+fi
 echo ""
 
 # ─── Configuration ─────────────────────────────────────────────────────────
@@ -158,16 +171,20 @@ if prompt_yes_no "Configure Google Gemini Pro?"; then
   
   if grep -q "^GOOGLE_API_KEY=" .env; then
     sed "s|^GOOGLE_API_KEY=.*|GOOGLE_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env
+    sed "s|^GOOGLE_GENERATIVE_AI_API_KEY=.*|GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env 2>/dev/null || echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> .env
   else
     echo "GOOGLE_API_KEY=\"$KEY\"" >> .env
+    echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> .env
   fi
   
   mkdir -p "$HOME/.config/opencode"
   touch "$HOME/.config/opencode/.env"
   if grep -q "^GOOGLE_API_KEY=" "$HOME/.config/opencode/.env"; then
     sed "s|^GOOGLE_API_KEY=.*|GOOGLE_API_KEY=\"$KEY\"|" "$HOME/.config/opencode/.env" > "$HOME/.config/opencode/.env.tmp" && mv "$HOME/.config/opencode/.env.tmp" "$HOME/.config/opencode/.env"
+    sed "s|^GOOGLE_GENERATIVE_AI_API_KEY=.*|GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"|" "$HOME/.config/opencode/.env" > "$HOME/.config/opencode/.env.tmp" && mv "$HOME/.config/opencode/.env.tmp" "$HOME/.config/opencode/.env" 2>/dev/null || echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
   else
     echo "GOOGLE_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
+    echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
   fi
   
   success "Google key saved (local and global)\n"
@@ -248,6 +265,12 @@ fi
 if npm list -g opencode-antigravity-auth >/dev/null 2>&1; then
   if opencode auth list 2>/dev/null | grep -i -q "google"; then
     success "Antigravity Auth — active"
+    
+    # Add dummy key for Antigravity if no real Google API key is set
+    if [ -z "$GOOGLE_API_KEY" ] && ! grep -q "^GOOGLE_GENERATIVE_AI_API_KEY=" .env 2>/dev/null; then
+      echo "GOOGLE_GENERATIVE_AI_API_KEY=\"antigravity-dummy-key\"" >> .env
+      echo "GOOGLE_GENERATIVE_AI_API_KEY=\"antigravity-dummy-key\"" >> "$HOME/.config/opencode/.env"
+    fi
   else
     warn "Antigravity Auth — not active (run 'opencode auth login')"
   fi

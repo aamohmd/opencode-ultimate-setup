@@ -85,6 +85,16 @@ if prompt_yes_no "Remove global npm packages (opencode-ai, opencode-antigravity-
   spinner_task "Uninstalling global packages" npm uninstall -g opencode-ai opencode-antigravity-auth tokscale
 fi
 
+if prompt_yes_no "Remove snip CLI?"; then
+  if command -v brew >/dev/null 2>&1 && brew list edouard-claude/tap/snip >/dev/null 2>&1; then
+    spinner_task "Removing snip CLI" brew uninstall edouard-claude/tap/snip
+  elif command -v snip >/dev/null 2>&1; then
+    warn "snip was not installed via brew. Remove it manually from your GOPATH or PATH."
+  else
+    success "snip is not installed or already removed."
+  fi
+fi
+
 if prompt_yes_no "Remove oh-my-openagent terminal harness?"; then
   if [ -d "$HOME/.oh-my-openagent" ]; then
     spinner_task "Removing oh-my-openagent directory" rm -rf "$HOME/.oh-my-openagent"
