@@ -129,6 +129,15 @@ elif prompt_yes_no "Install oh-my-openagent (Advanced Terminal Harness)?"; then
   INSTALL_OMA=true
 fi
 
+INSTALL_REPOMIX=false
+if npm_installed repomix; then
+  success "repomix is already installed."
+  INSTALL_REPOMIX=true
+elif prompt_yes_no "Install repomix (Pack any repo into a single AI-readable file)?"; then
+  spinner_task "Installing repomix" npm install -g repomix
+  INSTALL_REPOMIX=true
+fi
+
 INSTALL_SNIP=false
 if command -v snip >/dev/null 2>&1; then
   success "snip CLI is already installed."
@@ -152,16 +161,27 @@ OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"
 
 OPENCODE_CONFIG_FILE="$OPENCODE_CONFIG_DIR/opencode.json"
+
 if [ ! -f "$OPENCODE_CONFIG_FILE" ]; then
   cp configs/opencode.json "$OPENCODE_CONFIG_FILE"
+  REPOMIX_INSTALLED="$INSTALL_REPOMIX" node -e "
+    const fs = require('fs');
+    const d = JSON.parse(fs.readFileSync('$OPENCODE_CONFIG_FILE'));
+    if (process.env.REPOMIX_INSTALLED !== 'true')
+      d.instructions = (d.instructions || []).filter(i => !i.startsWith('Codebase Context:'));
+    fs.writeFileSync('$OPENCODE_CONFIG_FILE', JSON.stringify(d, null, 2));
+  "
 else
-  node -e "
+  REPOMIX_INSTALLED="$INSTALL_REPOMIX" node -e "
     const fs = require('fs');
     const src = JSON.parse(fs.readFileSync('configs/opencode.json'));
     const dst = JSON.parse(fs.readFileSync('$OPENCODE_CONFIG_FILE'));
-    const merged = Array.from(new Set([...(dst.plugin || []), ...(src.plugin || [])]));
-    dst.plugin = merged;
-    dst.instructions = src.instructions;
+    dst.plugin = Array.from(new Set([...(dst.plugin || []), ...(src.plugin || [])]));
+    const base = src.instructions.filter(i => !i.startsWith('Codebase Context:'));
+    const repomix = src.instructions.find(i => i.startsWith('Codebase Context:'));
+    dst.instructions = (process.env.REPOMIX_INSTALLED === 'true' && repomix)
+      ? [...base, repomix]
+      : base;
     fs.writeFileSync('$OPENCODE_CONFIG_FILE', JSON.stringify(dst, null, 2));
   "
 fi

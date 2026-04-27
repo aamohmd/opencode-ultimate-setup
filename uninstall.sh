@@ -81,8 +81,8 @@ spinner_task() {
 info "This script will remove the opencode Ultimate Stack components from your system."
 echo ""
 
-if prompt_yes_no "Remove global npm packages (opencode-ai, opencode-antigravity-auth, tokscale)?"; then
-  spinner_task "Uninstalling global packages" npm uninstall -g opencode-ai opencode-antigravity-auth tokscale
+if prompt_yes_no "Remove global npm packages (opencode-ai, opencode-antigravity-auth, tokscale, repomix)?"; then
+  spinner_task "Uninstalling global packages" npm uninstall -g opencode-ai opencode-antigravity-auth tokscale repomix
 fi
 
 if prompt_yes_no "Remove snip CLI?"; then

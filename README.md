@@ -57,6 +57,8 @@ The stack is highly modular. The setup script will intelligently configure only 
   High-performance CLI tool and visualization dashboard for tracking token usage and costs.
 * <a href="https://github.com/VincentHardouin/opencode-snip"><img src="https://img.shields.io/badge/opencode--snip-Token_Saver-black?style=for-the-badge&logo=github" height="22"></a> <img src="https://img.shields.io/github/stars/VincentHardouin/opencode-snip?style=for-the-badge&color=yellow" height="22">
   Automatically prefixes shell commands with [snip](https://github.com/edouard-claude/snip), a CLI proxy that filters command output before it reaches the LLM context — cutting token consumption by 60-99%.
+* <a href="https://github.com/yamadashy/repomix"><img src="https://img.shields.io/badge/repomix-Context_Packer-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/yamadashy/repomix?style=for-the-badge&color=yellow" height="22">
+  Packs an entire repository into a single AI-readable file. Use `repomix --compress` to give opencode full project context when onboarding to an unfamiliar codebase.
 
 ### Default System Prompts
 The core configuration includes custom system instructions based on **Andrej Karpathy's LLM coding guidelines**. This provides:
