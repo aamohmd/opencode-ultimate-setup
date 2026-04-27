@@ -5,6 +5,11 @@
 ![Google](https://img.shields.io/badge/Google_Pro-Gemini_Advanced-orange?style=for-the-badge&logo=google)
 ![OpenRouter](https://img.shields.io/badge/OpenRouter-Multi--LLM-purple?style=for-the-badge)
 
+<p align="center">
+  <img src="./frame.png" alt="opencode Ultimate Stack Preview" width="100%">
+</p>
+
+
 ## Table of Contents
 - [Overview](#overview)
 - [What's Included](#whats-included)
