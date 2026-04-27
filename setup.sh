@@ -36,7 +36,7 @@ ok "Dependencies OK"
 # ─── Install Packages ──────────────────────────────────────────────────────
 step "Installing Core Packages"
 
-for pkg in "opencode-ai" "opencode-antigravity-auth"; do
+for pkg in "opencode-ai" "opencode-antigravity-auth" "tokscale"; do
   if npm list -g "$pkg" >/dev/null 2>&1; then
     ok "$pkg already installed"
   else
