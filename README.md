@@ -106,7 +106,7 @@ If you prefer to install and configure the components manually, follow these ste
 5. **Install Antigravity Auth & Tokscale**
    ```bash
    npm install -g opencode-antigravity-auth tokscale
-   opencode-antigravity-auth init
+   opencode auth login
    ```
 
 6. **Install oh-my-openagent**

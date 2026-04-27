@@ -173,10 +173,15 @@ if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
   success "OpenRouter key saved to .env\n"
 fi
 
-if [ "$INSTALL_AUTH" = true ] || command -v opencode-antigravity-auth >/dev/null 2>&1; then
-  info "Initializing Antigravity Auth Layer..."
-  opencode-antigravity-auth init || warn "Antigravity Auth initialization returned non-zero."
-  echo ""
+if [ "$INSTALL_AUTH" = true ]; then
+  if opencode auth list 2>/dev/null | grep -i -q "google"; then
+    success "Antigravity Auth is already configured.\n"
+  else
+    info "Initializing Antigravity Auth Layer..."
+    echo -e "${DIM}Please select 'Google' -> 'OAuth with Google (Antigravity)' from the menu.${RESET}"
+    opencode auth login || warn "Antigravity Auth skipped."
+    echo ""
+  fi
 fi
 
 # ─── Final Auth Check ──────────────────────────────────────────────────────
@@ -209,11 +214,11 @@ else
   warn "OpenRouter      — skipped (optional)"
 fi
 
-if command -v opencode-antigravity-auth >/dev/null 2>&1; then
-  if opencode-antigravity-auth status 2>/dev/null | grep -q "active"; then
+if npm list -g opencode-antigravity-auth >/dev/null 2>&1; then
+  if opencode auth list 2>/dev/null | grep -i -q "google"; then
     success "Antigravity Auth — active"
   else
-    warn "Antigravity Auth — not active (run opencode-antigravity-auth init)"
+    warn "Antigravity Auth — not active (run 'opencode auth login')"
   fi
 else
   warn "Antigravity Auth — skipped (not installed)"
