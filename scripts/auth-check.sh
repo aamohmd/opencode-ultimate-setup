@@ -44,10 +44,14 @@ else
   warn "OpenRouter      — skipped (optional)"
 fi
 
-if opencode-antigravity-auth status 2>/dev/null | grep -q "active"; then
-  ok "Antigravity Auth — active"
+if command -v opencode-antigravity-auth >/dev/null 2>&1; then
+  if opencode-antigravity-auth status 2>/dev/null | grep -q "active"; then
+    ok "Antigravity Auth — active"
+  else
+    warn "Antigravity Auth — not active (run opencode-antigravity-auth init)"
+  fi
 else
-  warn "Antigravity Auth — not active (run opencode-antigravity-auth init)"
+  warn "Antigravity Auth — skipped (not installed)"
 fi
 
 echo ""

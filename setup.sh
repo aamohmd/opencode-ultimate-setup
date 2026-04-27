@@ -92,14 +92,32 @@ command -v npm  >/dev/null 2>&1 || error "npm is required."
 command -v git  >/dev/null 2>&1 || error "Git is required."
 echo ""
 
-# ─── Install Packages ──────────────────────────────────────────────────────
-info "Installing core engine & plugins..."
+# ─── Install Core ──────────────────────────────────────────────────────────
+info "Installing Core Engine..."
 spinner_task "Installing opencode-ai" npm install -g opencode-ai
-spinner_task "Installing opencode-antigravity-auth" npm install -g opencode-antigravity-auth
-spinner_task "Installing tokscale" npm install -g tokscale
+echo ""
 
-if [ ! -d "$HOME/.oh-my-openagent" ]; then
-  spinner_task "Installing oh-my-openagent" npx --yes oh-my-openagent install --no-tui --claude=no --openai=no --gemini=no --copilot=no --skip-auth
+# ─── Ecosystem Selection ───────────────────────────────────────────────────
+info "Select Ecosystem Plugins (Optional but Recommended)"
+
+INSTALL_AUTH=false
+if prompt_yes_no "Install opencode-antigravity-auth (Seamless Token Management)?"; then
+  spinner_task "Installing opencode-antigravity-auth" npm install -g opencode-antigravity-auth
+  INSTALL_AUTH=true
+fi
+
+if prompt_yes_no "Install tokscale (Analytics & Cost Dashboard)?"; then
+  spinner_task "Installing tokscale" npm install -g tokscale
+fi
+
+INSTALL_OMA=false
+if prompt_yes_no "Install oh-my-openagent (Advanced Terminal Harness)?"; then
+  if [ ! -d "$HOME/.oh-my-openagent" ]; then
+    spinner_task "Installing oh-my-openagent" npx --yes oh-my-openagent install --no-tui --claude=no --openai=no --gemini=no --copilot=no --skip-auth
+  else
+    success "oh-my-openagent is already installed.\n"
+  fi
+  INSTALL_OMA=true
 fi
 echo ""
 
@@ -112,7 +130,8 @@ if [ -f "configs/opencode.json" ]; then
 fi
 
 OMA_CONFIG_DIR="$HOME/.oh-my-openagent"
-if [ -d "$OMA_CONFIG_DIR" ]; then
+if [ "$INSTALL_OMA" = true ] || [ -d "$OMA_CONFIG_DIR" ]; then
+  mkdir -p "$OMA_CONFIG_DIR"
   cp configs/oh-my-openagent/.openagentrc "$OMA_CONFIG_DIR/" 2>/dev/null || true
 fi
 success "Configs applied successfully.\n"
@@ -152,8 +171,10 @@ if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
   success "OpenRouter key saved to .env\n"
 fi
 
-spinner_task "Initializing Antigravity Auth Layer" opencode-antigravity-auth init
-echo ""
+if [ "$INSTALL_AUTH" = true ] || command -v opencode-antigravity-auth >/dev/null 2>&1; then
+  spinner_task "Initializing Antigravity Auth Layer" opencode-antigravity-auth init
+  echo ""
+fi
 
 # ─── Final Auth Check ──────────────────────────────────────────────────────
 if [ -x "scripts/auth-check.sh" ]; then
