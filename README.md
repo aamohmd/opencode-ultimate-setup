@@ -62,7 +62,7 @@ The stack is highly modular. The setup script will intelligently configure only 
 
 ### Automated Setup (Recommended)
 
-The quickest way to get started is to use the automated setup script, which handles dependencies, authentication, and provider configuration automatically.
+The quickest way to get started is to use the automated setup script via the `Makefile`. This handles dependencies, authentication, and provider configuration automatically.
 
 ```bash
 git clone https://github.com/aamohmd/opencode-ultimate-setup.git
@@ -72,7 +72,17 @@ cd opencode-ultimate-setup
 cp configs/openrouter.env .env
 nano .env # or use your favorite editor
 
-./setup.sh
+make install
+```
+
+---
+
+## Uninstallation
+
+If you need to remove the stack and its configurations, you can use the provided teardown script:
+
+```bash
+make uninstall
 ```
 
 ---
