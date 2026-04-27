@@ -31,21 +31,21 @@ Managing multiple AI providers (Claude, Gemini, GPT) and their associated config
 The stack is highly modular. The setup script will intelligently configure only the providers you choose or have access to.
 
 ### Core Engine
-* **[opencode](https://github.com/opencode-ai/opencode)** ![Stars](https://img.shields.io/github/stars/opencode-ai/opencode?style=flat-square&color=yellow)
+* [![opencode](https://img.shields.io/badge/opencode-terminal_AI-black?style=flat-square&logo=github)](https://github.com/opencode-ai/opencode) ![Stars](https://img.shields.io/github/stars/opencode-ai/opencode?style=flat-square&color=yellow)
   The terminal-first AI coding assistant that acts as the orchestrator.
 
 ### Providers & Models
-* **[GitHub Copilot Student Pack](https://education.github.com/)**
+* [![Copilot](https://img.shields.io/badge/GitHub_Copilot-Student_Pack-blue?style=flat-square&logo=github)](https://education.github.com/)
   Grants access to Copilot, Claude, and premium models.
-* **[Google Pro Plan](https://one.google.com/)**
+* [![Google](https://img.shields.io/badge/Google_Pro-Gemini_Advanced-orange?style=flat-square&logo=google)](https://one.google.com/)
   Enables Gemini 2.5 Pro for handling massive context windows.
-* **[OpenRouter](https://openrouter.ai/)**
+* [![OpenRouter](https://img.shields.io/badge/OpenRouter-Multi--LLM-purple?style=flat-square)](https://openrouter.ai/)
   A unified API gateway granting access to over 200 open-source and proprietary models.
 
 ### Ecosystem Plugins
-* **[opencode-antigravity-auth](https://github.com/NoeFabris/opencode-antigravity-auth)** ![Stars](https://img.shields.io/github/stars/NoeFabris/opencode-antigravity-auth?style=flat-square&color=yellow)
+* [![opencode-antigravity-auth](https://img.shields.io/badge/opencode--antigravity--auth-Plugin-black?style=flat-square&logo=github)](https://github.com/NoeFabris/opencode-antigravity-auth) ![Stars](https://img.shields.io/github/stars/NoeFabris/opencode-antigravity-auth?style=flat-square&color=yellow)
   Centralized authentication layer preventing manual token juggling.
-* **[oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent)** ![Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=flat-square&color=yellow)
+* [![oh-my-openagent](https://img.shields.io/badge/oh--my--openagent-Harness-black?style=flat-square&logo=github)](https://github.com/code-yeongyu/oh-my-openagent) ![Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=flat-square&color=yellow)
   Enhances the terminal experience with plugins, themes, and specialized tools.
 
 ---
