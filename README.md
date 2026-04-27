@@ -40,7 +40,7 @@ The stack is highly modular. The setup script will intelligently configure only 
 ### Providers & Models
 * <a href="https://education.github.com/"><img src="https://img.shields.io/badge/GitHub_Copilot-Student_Pack-blue?style=for-the-badge&logo=github" height="22"></a>
   Grants access to Copilot, Claude, and premium models.
-* <a href="https://aistudio.google.com/"><img src="https://img.shields.io/badge/Google_Pro-Gemini_Advanced-orange?style=for-the-badge&logo=google" height="22"></a>
+* <a href="https://gemini.google.com/advanced"><img src="https://img.shields.io/badge/Google_Pro-Gemini_Advanced-orange?style=for-the-badge&logo=google" height="22"></a>
   Enables Gemini 2.5 Pro for handling massive context windows.
 * <a href="https://openrouter.ai/"><img src="https://img.shields.io/badge/OpenRouter-Multi--LLM-purple?style=for-the-badge" height="22"></a>
   A unified API gateway granting access to over 200 open-source and proprietary models.
