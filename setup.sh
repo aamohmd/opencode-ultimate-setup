@@ -1,95 +1,161 @@
 #!/usr/bin/env bash
 # =============================================================================
-# opencode Ultimate Stack — The Only Script You Need
+# opencode Ultimate Stack — Interactive Setup
 # =============================================================================
 
 set -e
 
-RED='\033[0;31m'
+# --- Colors & Styles ---
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
+RED='\033[0;31m'
 BOLD='\033[1m'
+DIM='\033[2m'
 RESET='\033[0m'
 
-step() { echo -e "\n${CYAN}${BOLD}▶ $1${RESET}"; }
-ok()   { echo -e "${GREEN}✔ $1${RESET}"; }
-warn() { echo -e "${YELLOW}⚠ $1${RESET}"; }
-err()  { echo -e "${RED}✘ $1${RESET}"; exit 1; }
-fail() { echo -e "${RED}✘ $1${RESET}"; }
+# --- UI Helpers ---
+clear
 
-echo -e "${BOLD}"
-echo "╔══════════════════════════════════════════╗"
-echo "║   opencode Ultimate Stack — Zero Setup   ║"
-echo "╚══════════════════════════════════════════╝"
-echo -e "${RESET}"
+echo -e "${PURPLE}${BOLD}"
+echo "   ____                   ____          _      "
+echo "  / __ \____  ___  ____  / __ \____  __| |____ "
+echo " / / / / __ \/ _ \/ __ \/ / / / __ \/ _  / __ \\"
+echo "/ /_/ / /_/ /  __/ / / / /_/ / /_/ / /_/ / /_/ /"
+echo "\____/ .___/\___/_/ /_/\____/\____/\__,_/\____/ "
+echo "    /_/                                         "
+echo -e "${RESET}${DIM} ⚡ The Ultimate AI Agent Stack Initialization ⚡${RESET}\n"
+
+info()    { echo -e "${CYAN}❯${RESET} $1"; }
+success() { echo -e "${GREEN}✔${RESET} $1"; }
+warn()    { echo -e "${YELLOW}⚠${RESET} $1"; }
+error()   { echo -e "${RED}✘${RESET} $1"; exit 1; }
+
+prompt_yes_no() {
+  while true; do
+    echo -e -n "${CYAN}?${RESET} ${BOLD}$1${RESET} ${DIM}(Y/n)${RESET} "
+    read -r yn
+    case ${yn:-Y} in
+      [Yy]* ) return 0 ;;
+      [Nn]* ) return 1 ;;
+      * ) echo -e "${RED}Please answer yes or no.${RESET}" ;;
+    esac
+  done
+}
+
+prompt_input() {
+  echo -e -n "${CYAN}?${RESET} ${BOLD}$1${RESET} "
+  read -rs val
+  echo ""
+  echo "$val"
+}
+
+spinner_task() {
+  local msg="$1"
+  shift
+  local cmd=("$@")
+  
+  echo -e -n "${CYAN}⠋${RESET} ${msg}..."
+  
+  local tmpfile
+  tmpfile=$(mktemp)
+  "${cmd[@]}" > "$tmpfile" 2>&1 &
+  local pid=$!
+  
+  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+  while kill -0 $pid 2>/dev/null; do
+    local temp=${spinstr#?}
+    printf "\r${CYAN}%c${RESET} ${msg}..." "$spinstr"
+    local spinstr=$temp${spinstr%"$temp"}
+    sleep 0.1
+  done
+  
+  wait $pid
+  local exit_code=$?
+  
+  if [ $exit_code -eq 0 ]; then
+    printf "\r${GREEN}✔${RESET} ${msg}... ${GREEN}Done!${RESET}       \n"
+  else
+    printf "\r${RED}✘${RESET} ${msg}... ${RED}Failed!${RESET}     \n"
+    cat "$tmpfile"
+    rm -f "$tmpfile"
+    exit 1
+  fi
+  rm -f "$tmpfile"
+}
 
 # ─── Check Dependencies ────────────────────────────────────────────────────
-step "Checking system dependencies"
-command -v node >/dev/null 2>&1 || err "Node.js not found. Install from https://nodejs.org"
-command -v npm  >/dev/null 2>&1 || err "npm not found"
-command -v git  >/dev/null 2>&1 || err "Git not found"
-command -v curl >/dev/null 2>&1 || err "curl not found"
-
-ok "Dependencies OK"
+info "Checking system requirements..."
+command -v node >/dev/null 2>&1 || error "Node.js is required. Install from https://nodejs.org"
+command -v npm  >/dev/null 2>&1 || error "npm is required."
+command -v git  >/dev/null 2>&1 || error "Git is required."
+echo ""
 
 # ─── Install Packages ──────────────────────────────────────────────────────
-step "Installing Core Packages"
+info "Installing core engine & plugins..."
+spinner_task "Installing opencode-ai" npm install -g opencode-ai
+spinner_task "Installing opencode-antigravity-auth" npm install -g opencode-antigravity-auth
+spinner_task "Installing tokscale" npm install -g tokscale
 
-for pkg in "opencode-ai" "opencode-antigravity-auth" "tokscale"; do
-  if npm list -g "$pkg" >/dev/null 2>&1; then
-    ok "$pkg already installed"
-  else
-    npm install -g "$pkg"
-    ok "$pkg installed"
-  fi
-done
-
-if [ -d "$HOME/.oh-my-openagent" ]; then
-  ok "oh-my-openagent already installed"
-else
-  npx oh-my-openagent install
-  ok "oh-my-openagent installed"
+if [ ! -d "$HOME/.oh-my-openagent" ]; then
+  spinner_task "Installing oh-my-openagent" npx --yes oh-my-openagent install
 fi
+echo ""
 
 # ─── Configuration ─────────────────────────────────────────────────────────
-step "Applying Configurations"
-
-# Opencode config
+info "Applying stack configurations..."
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"
 if [ -f "configs/opencode.json" ]; then
   cp configs/opencode.json "$OPENCODE_CONFIG_DIR/opencode.json"
-  ok "opencode global config applied (~/.config/opencode/opencode.json)"
 fi
 
-# Oh My OpenAgent config
 OMA_CONFIG_DIR="$HOME/.oh-my-openagent"
 if [ -d "$OMA_CONFIG_DIR" ]; then
   cp configs/oh-my-openagent/.openagentrc "$OMA_CONFIG_DIR/" 2>/dev/null || true
-  ok "oh-my-openagent configs applied"
+fi
+success "Configs applied successfully.\n"
+
+# ─── Interactive Authentication ─────────────────────────────────────────────
+info "Provider Authentication"
+
+touch .env
+
+if prompt_yes_no "Enable GitHub Copilot Integration?"; then
+  if opencode auth status github 2>/dev/null | grep -q "authenticated"; then
+    success "GitHub is already authenticated.\n"
+  else
+    echo -e "${DIM}Opening browser for GitHub authentication...${RESET}"
+    opencode auth github || warn "GitHub auth skipped."
+    echo ""
+  fi
 fi
 
-set -a
-# shellcheck disable=SC1091
-[ -f .env ] && source .env
-set +a
-
-# ─── Authentication ────────────────────────────────────────────────────────
-step "GitHub Copilot Auth"
-if opencode auth status github 2>/dev/null | grep -q "authenticated"; then
-  ok "GitHub already authenticated"
-else
-  echo "Opening GitHub auth..."
-  opencode auth github || warn "GitHub auth failed/skipped"
+if prompt_yes_no "Configure Google Gemini Pro?"; then
+  KEY=$(prompt_input "Enter your Google API Key (input hidden):")
+  if grep -q "^GOOGLE_API_KEY=" .env; then
+    sed -i.bak "s/^GOOGLE_API_KEY=.*/GOOGLE_API_KEY=\"$KEY\"/" .env && rm -f .env.bak
+  else
+    echo "GOOGLE_API_KEY=\"$KEY\"" >> .env
+  fi
+  success "Google key saved to .env\n"
 fi
 
-step "Initializing Antigravity Auth"
-opencode-antigravity-auth init || warn "Antigravity init failed"
+if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
+  KEY=$(prompt_input "Enter your OpenRouter API Key (input hidden):")
+  if grep -q "^OPENROUTER_API_KEY=" .env; then
+    sed -i.bak "s/^OPENROUTER_API_KEY=.*/OPENROUTER_API_KEY=\"$KEY\"/" .env && rm -f .env.bak
+  else
+    echo "OPENROUTER_API_KEY=\"$KEY\"" >> .env
+  fi
+  success "OpenRouter key saved to .env\n"
+fi
 
-# ─── Auth Check ────────────────────────────────────────────────────────────
+spinner_task "Initializing Antigravity Auth Layer" opencode-antigravity-auth init
+echo ""
+
+# ─── Final Auth Check ──────────────────────────────────────────────────────
 if [ -x "scripts/auth-check.sh" ]; then
   ./scripts/auth-check.sh
-else
-  warn "Auth check script not found or not executable"
 fi
