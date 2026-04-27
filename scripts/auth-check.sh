@@ -6,13 +6,14 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
 CYAN='\033[0;36m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
 ok()   { echo -e "${GREEN}✔ $1${RESET}"; }
 warn() { echo -e "${YELLOW}⚠ $1${RESET}"; }
-step() { echo -e "\n${CYAN}${BOLD}▶ $1${RESET}"; }
+step() { echo -e "\n${BLUE}${BOLD}▶ $1${RESET}"; }
 
 set -a
 [ -f .env ] && source .env

@@ -6,7 +6,7 @@
 set -e
 
 # --- Colors & Styles ---
-PURPLE='\033[0;35m'
+BLUE='\033[1;34m'
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -18,7 +18,7 @@ RESET='\033[0m'
 # --- UI Helpers ---
 clear
 
-echo -e "${PURPLE}${BOLD}"
+echo -e "${BLUE}${BOLD}"
 echo "   ____                   ____          _      "
 echo "  / __ \____  ___  ____  / __ \____  __| |____ "
 echo " / / / / __ \/ _ \/ __ \/ / / / __ \/ _  / __ \\"
