@@ -56,6 +56,13 @@ The stack is highly modular. The setup script will intelligently configure only 
 * <a href="https://github.com/junhoyeo/tokscale"><img src="https://img.shields.io/badge/tokscale-Analytics-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/junhoyeo/tokscale?style=for-the-badge&color=yellow" height="22">
   High-performance CLI tool and visualization dashboard for tracking token usage and costs.
 
+### Default System Prompts
+The core configuration includes custom system instructions ("instructions" parameter) out of the box. This provides:
+- Better response conciseness and less AI "fluff"
+- Strict security boundaries and better tool usage out of the gate
+- Proactive planning behaviors before executing complex tasks
+No extra setup is required!
+
 ---
 
 ## Installation

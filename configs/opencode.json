@@ -1,6 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": ["oh-my-openagent", "opencode-antigravity-auth@latest"],
+  "instructions": "Be concise, avoid repetitive pleasantries, use direct tools whenever possible, strictly follow security boundaries, and prioritize clear and testable code. If encountering multiple errors, stop and formulate a plan rather than guessing.",
   "provider": {
     "google": {
       "npm": "@ai-sdk/google",
