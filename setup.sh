@@ -84,6 +84,8 @@ spinner_task() {
   rm -f "$tmpfile"
 }
 
+npm_installed() { npm list -g "$1" >/dev/null 2>&1; }
+
 # ─── Check Dependencies ────────────────────────────────────────────────────
 info "Checking system requirements..."
 command -v node >/dev/null 2>&1 || error "Node.js is required. Install from https://nodejs.org"
@@ -92,35 +94,46 @@ command -v git  >/dev/null 2>&1 || error "Git is required."
 echo ""
 
 # ─── Install Core ──────────────────────────────────────────────────────────
-info "Installing Core Engine..."
-spinner_task "Installing opencode-ai" npm install -g opencode-ai
-echo ""
+info "Core Engine..."
+if npm_installed opencode-ai; then
+  success "opencode-ai is already installed.\n"
+else
+  spinner_task "Installing opencode-ai" npm install -g opencode-ai
+  echo ""
+fi
 
 # ─── Ecosystem Selection ───────────────────────────────────────────────────
 info "Select Ecosystem Plugins (Optional but Recommended)"
 
 INSTALL_AUTH=false
-if prompt_yes_no "Install opencode-antigravity-auth (Antigravity Connection)?"; then
+if npm_installed opencode-antigravity-auth; then
+  success "opencode-antigravity-auth is already installed."
+  INSTALL_AUTH=true
+elif prompt_yes_no "Install opencode-antigravity-auth (Antigravity Connection)?"; then
   spinner_task "Installing opencode-antigravity-auth" npm install -g opencode-antigravity-auth
   INSTALL_AUTH=true
 fi
 
-if prompt_yes_no "Install tokscale (Analytics & Cost Dashboard)?"; then
+if npm_installed tokscale; then
+  success "tokscale is already installed."
+elif prompt_yes_no "Install tokscale (Analytics & Cost Dashboard)?"; then
   spinner_task "Installing tokscale" npm install -g tokscale
 fi
 
 INSTALL_OMA=false
-if prompt_yes_no "Install oh-my-openagent (Advanced Terminal Harness)?"; then
-  if [ ! -d "$HOME/.oh-my-openagent" ]; then
-    spinner_task "Installing oh-my-openagent" npx --yes oh-my-openagent install --no-tui --claude=no --openai=no --gemini=no --copilot=no --skip-auth
-  else
-    success "oh-my-openagent is already installed.\n"
-  fi
+if [ -d "$HOME/.oh-my-openagent" ]; then
+  success "oh-my-openagent is already installed."
+  INSTALL_OMA=true
+elif prompt_yes_no "Install oh-my-openagent (Advanced Terminal Harness)?"; then
+  spinner_task "Installing oh-my-openagent" npx --yes oh-my-openagent install --no-tui --claude=no --openai=no --gemini=no --copilot=no --skip-auth
   INSTALL_OMA=true
 fi
 
 INSTALL_SNIP=false
-if prompt_yes_no "Install opencode-snip (Token Saver — cuts command output by 60-99%)?"; then
+if command -v snip >/dev/null 2>&1; then
+  success "snip CLI is already installed."
+  INSTALL_SNIP=true
+elif prompt_yes_no "Install opencode-snip (Token Saver — cuts command output by 60-99%)?"; then
   if command -v brew >/dev/null 2>&1; then
     spinner_task "Installing snip CLI (via brew)" brew install edouard-claude/tap/snip
   elif command -v go >/dev/null 2>&1; then
@@ -137,8 +150,20 @@ echo ""
 info "Applying stack configurations..."
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"
-if [ -f "configs/opencode.json" ]; then
-  cp configs/opencode.json "$OPENCODE_CONFIG_DIR/opencode.json"
+
+OPENCODE_CONFIG_FILE="$OPENCODE_CONFIG_DIR/opencode.json"
+if [ ! -f "$OPENCODE_CONFIG_FILE" ]; then
+  cp configs/opencode.json "$OPENCODE_CONFIG_FILE"
+else
+  node -e "
+    const fs = require('fs');
+    const src = JSON.parse(fs.readFileSync('configs/opencode.json'));
+    const dst = JSON.parse(fs.readFileSync('$OPENCODE_CONFIG_FILE'));
+    const merged = Array.from(new Set([...(dst.plugin || []), ...(src.plugin || [])]));
+    dst.plugin = merged;
+    dst.instructions = src.instructions;
+    fs.writeFileSync('$OPENCODE_CONFIG_FILE', JSON.stringify(dst, null, 2));
+  "
 fi
 
 OMA_CONFIG_DIR="$HOME/.oh-my-openagent"
@@ -152,71 +177,64 @@ success "Configs applied successfully.\n"
 info "Provider Authentication"
 
 touch .env
+set -a
+[ -f .env ] && source .env
+[ -f "$HOME/.config/opencode/.env" ] && source "$HOME/.config/opencode/.env"
+set +a
 
-if prompt_yes_no "Enable GitHub Copilot Integration?"; then
-  if opencode auth list 2>/dev/null | grep -i -q "github"; then
-    success "GitHub is already authenticated.\n"
-  else
-    echo -e "${DIM}Opening browser for GitHub authentication...${RESET}"
-    opencode auth login -p "GitHub Copilot" || warn "GitHub auth skipped."
-    echo ""
-  fi
+if opencode auth list 2>/dev/null | grep -i -q "github"; then
+  success "GitHub Copilot — already active."
+elif prompt_yes_no "Enable GitHub Copilot Integration?"; then
+  echo -e "${DIM}Opening browser for GitHub authentication...${RESET}"
+  opencode auth login -p "GitHub Copilot" || warn "GitHub auth skipped."
+  echo ""
 fi
 
-if prompt_yes_no "Configure Google Gemini Pro?"; then
-  echo -e "${DIM}Get your key here: https://aistudio.google.com/app/apikey${RESET}"
-  KEY=$(prompt_input "Enter your Google API Key:")
-  
-  KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
-  
-  if grep -q "^GOOGLE_API_KEY=" .env; then
+if [ -n "$GOOGLE_API_KEY" ]; then
+  success "Google Gemini Pro — already configured."
+  if prompt_yes_no "Update your Google API Key?"; then
+    echo -e "${DIM}Get your key here: https://aistudio.google.com/app/apikey${RESET}"
+    KEY=$(prompt_input "Enter your new Google API Key:")
+    KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
     sed "s|^GOOGLE_API_KEY=.*|GOOGLE_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env
     sed "s|^GOOGLE_GENERATIVE_AI_API_KEY=.*|GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env 2>/dev/null || echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> .env
-  else
-    echo "GOOGLE_API_KEY=\"$KEY\"" >> .env
-    echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> .env
-  fi
-  
-  mkdir -p "$HOME/.config/opencode"
-  touch "$HOME/.config/opencode/.env"
-  if grep -q "^GOOGLE_API_KEY=" "$HOME/.config/opencode/.env"; then
     sed "s|^GOOGLE_API_KEY=.*|GOOGLE_API_KEY=\"$KEY\"|" "$HOME/.config/opencode/.env" > "$HOME/.config/opencode/.env.tmp" && mv "$HOME/.config/opencode/.env.tmp" "$HOME/.config/opencode/.env"
     sed "s|^GOOGLE_GENERATIVE_AI_API_KEY=.*|GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"|" "$HOME/.config/opencode/.env" > "$HOME/.config/opencode/.env.tmp" && mv "$HOME/.config/opencode/.env.tmp" "$HOME/.config/opencode/.env" 2>/dev/null || echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
-  else
-    echo "GOOGLE_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
-    echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
+    success "Google key updated.\n"
   fi
-  
-  success "Google key saved (local and global)\n"
-else
-  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.google && d.provider.google.models) { delete d.provider.google.models['gemini-2.5-pro']; delete d.provider.google.models['gemini-2.5-flash']; if(Object.keys(d.provider.google.models).length === 0) { delete d.provider.google; } fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
-fi
-
-if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
-  spinner_task "Installing OpenRouter Provider" npm install -g @openrouter/ai-sdk-provider
-  
-  echo -e "${DIM}Get your key here: https://openrouter.ai/settings/keys${RESET}"
-  KEY=$(prompt_input "Enter your OpenRouter API Key:")
-  
+elif prompt_yes_no "Configure Google Gemini Pro?"; then
+  echo -e "${DIM}Get your key here: https://aistudio.google.com/app/apikey${RESET}"
+  KEY=$(prompt_input "Enter your Google API Key:")
   KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
-  
-  if grep -q "^OPENROUTER_API_KEY=" .env; then
-    sed "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env
-  else
-    echo "OPENROUTER_API_KEY=\"$KEY\"" >> .env
-  fi
-  
+  echo "GOOGLE_API_KEY=\"$KEY\"" >> .env
+  echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> .env
   mkdir -p "$HOME/.config/opencode"
   touch "$HOME/.config/opencode/.env"
-  if grep -q "^OPENROUTER_API_KEY=" "$HOME/.config/opencode/.env"; then
+  echo "GOOGLE_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
+  echo "GOOGLE_GENERATIVE_AI_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
+  success "Google key saved (local and global)\n"
+fi
+
+if [ -n "$OPENROUTER_API_KEY" ]; then
+  success "OpenRouter — already configured."
+  if prompt_yes_no "Update your OpenRouter API Key?"; then
+    echo -e "${DIM}Get your key here: https://openrouter.ai/settings/keys${RESET}"
+    KEY=$(prompt_input "Enter your new OpenRouter API Key:")
+    KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
+    sed "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=\"$KEY\"|" .env > .env.tmp && mv .env.tmp .env
     sed "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=\"$KEY\"|" "$HOME/.config/opencode/.env" > "$HOME/.config/opencode/.env.tmp" && mv "$HOME/.config/opencode/.env.tmp" "$HOME/.config/opencode/.env"
-  else
-    echo "OPENROUTER_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
+    success "OpenRouter key updated.\n"
   fi
-  
+elif prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
+  spinner_task "Installing OpenRouter Provider" npm install -g @openrouter/ai-sdk-provider
+  echo -e "${DIM}Get your key here: https://openrouter.ai/settings/keys${RESET}"
+  KEY=$(prompt_input "Enter your OpenRouter API Key:")
+  KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
+  echo "OPENROUTER_API_KEY=\"$KEY\"" >> .env
+  mkdir -p "$HOME/.config/opencode"
+  touch "$HOME/.config/opencode/.env"
+  echo "OPENROUTER_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
   success "OpenRouter key saved (local and global)\n"
-else
-  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.openrouter) { delete d.provider.openrouter; fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
 fi
 
 if [ "$INSTALL_AUTH" = true ]; then
@@ -228,8 +246,6 @@ if [ "$INSTALL_AUTH" = true ]; then
     opencode auth login -p google -m "OAuth with Google (Antigravity)" || warn "Antigravity Auth skipped."
     echo ""
   fi
-else
-  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.google && d.provider.google.models) { delete d.provider.google.models['antigravity-gemini-3-pro']; delete d.provider.google.models['antigravity-gemini-3-flash']; delete d.provider.google.models['antigravity-claude-sonnet-4-6']; delete d.provider.google.models['antigravity-claude-opus-4-6-thinking']; if(Object.keys(d.provider.google.models).length === 0) { delete d.provider.google; } fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
 fi
 
 # ─── Final Auth Check ──────────────────────────────────────────────────────
@@ -262,11 +278,9 @@ else
   warn "OpenRouter      — skipped (optional)"
 fi
 
-if npm list -g opencode-antigravity-auth >/dev/null 2>&1; then
+if npm_installed opencode-antigravity-auth; then
   if opencode auth list 2>/dev/null | grep -i -q "google"; then
     success "Antigravity Auth — active"
-    
-    # Add dummy key for Antigravity if no real Google API key is set
     if [ -z "$GOOGLE_API_KEY" ] && ! grep -q "^GOOGLE_GENERATIVE_AI_API_KEY=" .env 2>/dev/null; then
       echo "GOOGLE_GENERATIVE_AI_API_KEY=\"antigravity-dummy-key\"" >> .env
       echo "GOOGLE_GENERATIVE_AI_API_KEY=\"antigravity-dummy-key\"" >> "$HOME/.config/opencode/.env"
@@ -276,6 +290,12 @@ if npm list -g opencode-antigravity-auth >/dev/null 2>&1; then
   fi
 else
   warn "Antigravity Auth — skipped (not installed)"
+fi
+
+if command -v snip >/dev/null 2>&1; then
+  success "opencode-snip   — active"
+else
+  warn "opencode-snip   — skipped (optional)"
 fi
 
 echo ""
