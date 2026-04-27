@@ -1,4 +1,4 @@
-# 🚀 opencode Ultimate Dev Stack
+# 🚀 opencode Ultimate Setup
 
 ![Stack](https://img.shields.io/badge/opencode-terminal_AI-black?style=for-the-badge)
 ![Copilot](https://img.shields.io/badge/GitHub_Copilot-Student_Pack-blue?style=for-the-badge&logo=github)
