@@ -212,7 +212,7 @@ if [ "$INSTALL_AUTH" = true ]; then
     echo ""
   fi
 else
-  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.google && d.provider.google.models) { delete d.provider.google.models['antigravity-gemini-3-pro']; delete d.provider.google.models['antigravity-gemini-3-flash']; if(Object.keys(d.provider.google.models).length === 0) { delete d.provider.google; } fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
+  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.google && d.provider.google.models) { delete d.provider.google.models['antigravity-gemini-3-pro']; delete d.provider.google.models['antigravity-gemini-3-flash']; delete d.provider.google.models['antigravity-claude-sonnet-4-6']; delete d.provider.google.models['antigravity-claude-opus-4-6-thinking']; if(Object.keys(d.provider.google.models).length === 0) { delete d.provider.google; } fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
 fi
 
 # ─── Final Auth Check ──────────────────────────────────────────────────────
