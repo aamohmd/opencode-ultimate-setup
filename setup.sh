@@ -45,9 +45,8 @@ prompt_yes_no() {
 }
 
 prompt_input() {
-  echo -e -n "${CYAN}?${RESET} ${BOLD}$1${RESET} "
-  read -rs val
-  echo ""
+  echo -e -n "${CYAN}?${RESET} ${BOLD}$1${RESET} " >&2
+  read -r val
   echo "$val"
 }
 
@@ -153,7 +152,7 @@ fi
 
 if prompt_yes_no "Configure Google Gemini Pro?"; then
   echo -e "${DIM}Get your key here: https://aistudio.google.com/app/apikey${RESET}"
-  KEY=$(prompt_input "Enter your Google API Key (input hidden):")
+  KEY=$(prompt_input "Enter your Google API Key:")
   
   KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
   
@@ -162,12 +161,25 @@ if prompt_yes_no "Configure Google Gemini Pro?"; then
   else
     echo "GOOGLE_API_KEY=\"$KEY\"" >> .env
   fi
-  success "Google key saved to .env\n"
+  
+  mkdir -p "$HOME/.config/opencode"
+  touch "$HOME/.config/opencode/.env"
+  if grep -q "^GOOGLE_API_KEY=" "$HOME/.config/opencode/.env"; then
+    sed "s|^GOOGLE_API_KEY=.*|GOOGLE_API_KEY=\"$KEY\"|" "$HOME/.config/opencode/.env" > "$HOME/.config/opencode/.env.tmp" && mv "$HOME/.config/opencode/.env.tmp" "$HOME/.config/opencode/.env"
+  else
+    echo "GOOGLE_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
+  fi
+  
+  success "Google key saved (local and global)\n"
+else
+  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.google && d.provider.google.models) { delete d.provider.google.models['gemini-2.5-pro']; delete d.provider.google.models['gemini-2.5-flash']; if(Object.keys(d.provider.google.models).length === 0) { delete d.provider.google; } fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
 fi
 
 if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
+  spinner_task "Installing OpenRouter Provider" npm install -g @openrouter/ai-sdk-provider
+  
   echo -e "${DIM}Get your key here: https://openrouter.ai/settings/keys${RESET}"
-  KEY=$(prompt_input "Enter your OpenRouter API Key (input hidden):")
+  KEY=$(prompt_input "Enter your OpenRouter API Key:")
   
   KEY=$(echo "$KEY" | head -n 1 | tr -d '\r\n')
   
@@ -176,7 +188,18 @@ if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
   else
     echo "OPENROUTER_API_KEY=\"$KEY\"" >> .env
   fi
-  success "OpenRouter key saved to .env\n"
+  
+  mkdir -p "$HOME/.config/opencode"
+  touch "$HOME/.config/opencode/.env"
+  if grep -q "^OPENROUTER_API_KEY=" "$HOME/.config/opencode/.env"; then
+    sed "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=\"$KEY\"|" "$HOME/.config/opencode/.env" > "$HOME/.config/opencode/.env.tmp" && mv "$HOME/.config/opencode/.env.tmp" "$HOME/.config/opencode/.env"
+  else
+    echo "OPENROUTER_API_KEY=\"$KEY\"" >> "$HOME/.config/opencode/.env"
+  fi
+  
+  success "OpenRouter key saved (local and global)\n"
+else
+  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.openrouter) { delete d.provider.openrouter; fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
 fi
 
 if [ "$INSTALL_AUTH" = true ]; then
@@ -188,6 +211,8 @@ if [ "$INSTALL_AUTH" = true ]; then
     opencode auth login -p google -m "OAuth with Google (Antigravity)" || warn "Antigravity Auth skipped."
     echo ""
   fi
+else
+  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.google && d.provider.google.models) { delete d.provider.google.models['antigravity-gemini-3-pro']; delete d.provider.google.models['antigravity-gemini-3-flash']; if(Object.keys(d.provider.google.models).length === 0) { delete d.provider.google; } fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
 fi
 
 # ─── Final Auth Check ──────────────────────────────────────────────────────

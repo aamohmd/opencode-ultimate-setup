@@ -8,6 +8,9 @@
     "Goal-Driven Execution: Transform tasks into verifiable goals (e.g., write a test, then make it pass). State a brief verification plan for multi-step tasks."
   ],
   "provider": {
+    "openrouter": {
+      "npm": "@openrouter/ai-sdk-provider"
+    },
     "google": {
       "npm": "@ai-sdk/google",
       "models": {
@@ -30,16 +33,6 @@
             "medium": { "thinkingLevel": "medium" },
             "high": { "thinkingLevel": "high" }
           }
-        },
-        "gemini-2.5-flash": {
-          "name": "Gemini 2.5 Flash (Gemini CLI)",
-          "limit": { "context": 1048576, "output": 65536 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
-        },
-        "gemini-2.5-pro": {
-          "name": "Gemini 2.5 Pro (Gemini CLI)",
-          "limit": { "context": 1048576, "output": 65536 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
         }
       }
     }
