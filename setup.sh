@@ -66,10 +66,8 @@ fi
 # Oh My OpenAgent config
 OMA_CONFIG_DIR="$HOME/.oh-my-openagent"
 if [ -d "$OMA_CONFIG_DIR" ]; then
-  mkdir -p "$OMA_CONFIG_DIR/themes"
   cp configs/oh-my-openagent/.openagentrc "$OMA_CONFIG_DIR/" 2>/dev/null || true
-  cp configs/oh-my-openagent/themes/antigravity.theme "$OMA_CONFIG_DIR/themes/" 2>/dev/null || true
-  ok "oh-my-openagent configs and theme applied"
+  ok "oh-my-openagent configs applied"
 fi
 
 set -a
