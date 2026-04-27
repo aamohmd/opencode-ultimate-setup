@@ -71,8 +71,8 @@ spinner_task() {
     sleep 0.1
   done
   
-  wait $pid
-  local exit_code=$?
+  local exit_code=0
+  wait $pid || exit_code=$?
   
   if [ $exit_code -eq 0 ]; then
     printf "\r${GREEN}✔${RESET} ${msg}... ${GREEN}Done!${RESET}       \n"
@@ -174,7 +174,8 @@ if prompt_yes_no "Configure OpenRouter (200+ Models)?"; then
 fi
 
 if [ "$INSTALL_AUTH" = true ] || command -v opencode-antigravity-auth >/dev/null 2>&1; then
-  spinner_task "Initializing Antigravity Auth Layer" opencode-antigravity-auth init
+  info "Initializing Antigravity Auth Layer..."
+  opencode-antigravity-auth init || warn "Antigravity Auth initialization returned non-zero."
   echo ""
 fi
 
