@@ -5,8 +5,6 @@
 ![Google](https://img.shields.io/badge/Google_Pro-Gemini_Advanced-orange?style=for-the-badge&logo=google)
 ![OpenRouter](https://img.shields.io/badge/OpenRouter-Multi--LLM-purple?style=for-the-badge)
 
-The definitive, automated environment setup for AI-assisted development. This stack eliminates the friction of configuring workflows, managing authentication layers, and debugging models. It provides a zero-compromise, cost-effective AI coding environment ready to deploy in seconds.
-
 ## Table of Contents
 - [Overview](#overview)
 - [What's Included](#whats-included)
