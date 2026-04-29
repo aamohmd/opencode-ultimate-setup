@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # =============================================================================
-# opencode Ultimate Stack — Teardown & Uninstall
+# opencode Ultimate Stack — Teardown
 # =============================================================================
 
 set -e
 
-# --- Colors & Styles ---
 BLUE='\033[38;2;0;102;255m'
 CYAN='\033[38;2;0;210;255m'
 GREEN='\033[38;2;0;255;157m'
@@ -15,7 +14,6 @@ BOLD='\033[1m'
 DIM='\033[2m'
 RESET='\033[0m'
 
-# --- UI Helpers ---
 clear
 
 echo -e "${BLUE}${BOLD}"
@@ -24,22 +22,21 @@ echo "  ____  ____  ___  ____  _________  ____/ /__ "
 echo " / __ \/ __ \/ _ \/ __ \/ ___/ __ \/ __  / _ \\"
 echo "/ /_/ / /_/ /  __/ / / / /__/ /_/ / /_/ /  __/"
 echo "\____/ .___/\___/_/ /_/\___/\____/\__,_/\___/ "
-echo "    /_/                                       "
-echo -e "${RESET}${DIM} ⚡ The Ultimate AI Agent Stack Uninstaller ⚡${RESET}\n"
+echo "    /_/                                        "
+echo -e "${RESET}${DIM} Teardown${RESET}\n"
 
 info()    { echo -e "${CYAN}❯${RESET} $1"; }
 success() { echo -e "${GREEN}✔${RESET} $1"; }
 warn()    { echo -e "${YELLOW}⚠${RESET} $1"; }
-error()   { echo -e "${RED}✘${RESET} $1"; exit 1; }
 
 prompt_yes_no() {
   while true; do
     echo -e -n "${CYAN}?${RESET} ${BOLD}$1${RESET} ${DIM}(y/N)${RESET} "
     read -r yn
     case ${yn:-N} in
-      [Yy]* ) return 0 ;;
-      [Nn]* ) return 1 ;;
-      * ) echo -e "${RED}Please answer yes or no.${RESET}" ;;
+      [Yy]*) return 0 ;;
+      [Nn]*) return 1 ;;
+      *) echo -e "${RED}Please answer yes or no.${RESET}" ;;
     esac
   done
 }
@@ -47,71 +44,74 @@ prompt_yes_no() {
 spinner_task() {
   local msg="$1"
   shift
-  local cmd=("$@")
-  
-  echo -e -n "${CYAN}⠋${RESET} ${msg}..."
-  
   local tmpfile
   tmpfile=$(mktemp)
-  "${cmd[@]}" > "$tmpfile" 2>&1 &
+  "$@" > "$tmpfile" 2>&1 &
   local pid=$!
-  
   local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+  printf "${CYAN}⠋${RESET} %s..." "$msg"
   while kill -0 "$pid" 2>/dev/null; do
     local temp=${spinstr#?}
-    printf "\r${CYAN}%c${RESET} ${msg}..." "$spinstr"
-    local spinstr=$temp${spinstr%"$temp"}
+    printf "\r${CYAN}%c${RESET} %s..." "$spinstr" "$msg"
+    spinstr=$temp${spinstr%"$temp"}
     sleep 0.1
   done
-  
   local exit_code=0
   wait "$pid" || exit_code=$?
-  
   if [ $exit_code -eq 0 ]; then
-    printf "\r${GREEN}✔${RESET} ${msg}... ${GREEN}Done!${RESET}       \n"
+    printf "\r${GREEN}✔${RESET} %s... ${GREEN}Done!${RESET}       \n" "$msg"
   else
-    printf "\r${RED}✘${RESET} ${msg}... ${RED}Failed!${RESET}     \n"
-    cat "$tmpfile"
-    rm -f "$tmpfile"
-    exit 1
+    printf "\r${YELLOW}⚠${RESET} %s... ${YELLOW}Nothing to remove.${RESET}\n" "$msg"
   fi
   rm -f "$tmpfile"
 }
 
-info "This script will remove the opencode Ultimate Stack components from your system."
-echo ""
-
-if prompt_yes_no "Remove global npm packages (opencode-ai, opencode-antigravity-auth, tokscale, repomix)?"; then
-  spinner_task "Uninstalling global packages" npm uninstall -g opencode-ai opencode-antigravity-auth tokscale repomix
+# ─── Global npm packages ──────────────────────────────────────────────────
+if prompt_yes_no "Remove global npm packages (opencode-ai, oh-my-opencode, opencode-antigravity-auth, tokscale, repomix)?"; then
+  spinner_task "Removing global npm packages" \
+    npm uninstall -g opencode-ai oh-my-opencode opencode-antigravity-auth tokscale repomix
 fi
 
-if prompt_yes_no "Remove snip CLI?"; then
-  if command -v brew >/dev/null 2>&1 && brew list edouard-claude/tap/snip >/dev/null 2>&1; then
-    spinner_task "Removing snip CLI" brew uninstall edouard-claude/tap/snip
-  elif command -v snip >/dev/null 2>&1; then
-    warn "snip was not installed via brew. Remove it manually from your GOPATH or PATH."
-  else
-    success "snip is not installed or already removed."
+# ─── npx cache ────────────────────────────────────────────────────────────
+if prompt_yes_no "Clear npx cache for oh-my-opencode/oh-my-openagent?"; then
+  spinner_task "Clearing npx cache" bash -c \
+    'find "$HOME/.npm/_npx" -maxdepth 2 -type d 2>/dev/null | while read d; do
+       ls "$d/node_modules/" 2>/dev/null | grep -q "oh-my-open" && rm -rf "$d" || true
+     done; true'
+fi
+
+# ─── opencode binary ──────────────────────────────────────────────────────
+if prompt_yes_no "Remove opencode binary (~/.opencode)?"; then
+  spinner_task "Removing ~/.opencode" rm -rf "$HOME/.opencode"
+fi
+
+# ─── Config directory ─────────────────────────────────────────────────────
+if prompt_yes_no "Remove config directory (~/.config/opencode)?"; then
+  spinner_task "Removing ~/.config/opencode" rm -rf "$HOME/.config/opencode"
+fi
+
+# ─── Data directory ───────────────────────────────────────────────────────
+if prompt_yes_no "Remove data directory (~/.local/share/opencode — sessions, auth, DB)?"; then
+  spinner_task "Removing ~/.local/share/opencode" rm -rf "$HOME/.local/share/opencode"
+fi
+
+# ─── Shell PATH entry ─────────────────────────────────────────────────────
+info "Checking shell config for opencode PATH entries..."
+FOUND_PATH=false
+for rc in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.zprofile" "$HOME/.bash_profile"; do
+  if [ -f "$rc" ] && grep -q "\.opencode" "$rc" 2>/dev/null; then
+    FOUND_PATH=true
+    warn "Found opencode PATH entry in $rc — remove manually:"
+    grep -n "\.opencode" "$rc" | while read -r line; do
+      echo -e "  ${DIM}$line${RESET}"
+    done
+    echo ""
   fi
-fi
-
-if prompt_yes_no "Remove oh-my-openagent terminal harness?"; then
-  if [ -d "$HOME/.oh-my-openagent" ]; then
-    spinner_task "Removing oh-my-openagent directory" rm -rf "$HOME/.oh-my-openagent"
-  else
-    success "oh-my-openagent is not installed or already removed."
-  fi
-fi
-
-if prompt_yes_no "Remove opencode configuration directory (~/.config/opencode)?"; then
-  if [ -d "$HOME/.config/opencode" ]; then
-    spinner_task "Removing opencode configs" rm -rf "$HOME/.config/opencode"
-  else
-    success "opencode config directory not found or already removed."
-  fi
-fi
+done
+[ "$FOUND_PATH" = false ] && success "No PATH entries found.\n"
 
 echo ""
 echo -e "${BOLD}${GREEN}╔══════════════════════════════════════╗${RESET}"
-echo -e "${BOLD}${GREEN}║ ✔  Uninstallation complete!          ║${RESET}"
+echo -e "${BOLD}${GREEN}║   ✔  Teardown complete.              ║${RESET}"
 echo -e "${BOLD}${GREEN}╚══════════════════════════════════════╝${RESET}"
+echo ""
