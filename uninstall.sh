@@ -90,11 +90,6 @@ if prompt_yes_no "Remove config directory (~/.config/opencode)?"; then
   spinner_task "Removing ~/.config/opencode" rm -rf "$HOME/.config/opencode"
 fi
 
-# ─── Data directory ───────────────────────────────────────────────────────
-if prompt_yes_no "Remove data directory (~/.local/share/opencode — sessions, auth, DB)?"; then
-  spinner_task "Removing ~/.local/share/opencode" rm -rf "$HOME/.local/share/opencode"
-fi
-
 # ─── Shell PATH entry ─────────────────────────────────────────────────────
 info "Checking shell config for opencode PATH entries..."
 FOUND_PATH=false
