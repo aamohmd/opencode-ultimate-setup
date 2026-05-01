@@ -1,6 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["oh-my-openagent", "opencode-antigravity-auth@latest", "opencode-snip@latest"],
+  "plugin": ["oh-my-openagent"],
+  "model": "github-copilot/gpt-5.2",
+  "small_model": "openrouter/qwen/qwen3-coder:free",
   "instructions": [
     "Think Before Coding: State assumptions explicitly. Present multiple interpretations instead of picking silently. Push back when warranted. Stop and ask if confused.",
     "Simplicity First: Write the minimum code that solves the problem. No speculative features, abstractions, or error handling for impossible scenarios.",

@@ -105,14 +105,6 @@ fi
 # ─── Ecosystem Selection ───────────────────────────────────────────────────
 info "Select Ecosystem Plugins (Optional but Recommended)"
 
-INSTALL_AUTH=false
-if npm_installed opencode-antigravity-auth; then
-  success "opencode-antigravity-auth is already installed."
-  INSTALL_AUTH=true
-elif prompt_yes_no "Install opencode-antigravity-auth (Antigravity Connection)?"; then
-  spinner_task "Installing opencode-antigravity-auth" npm install -g opencode-antigravity-auth
-  INSTALL_AUTH=true
-fi
 
 if npm_installed tokscale; then
   success "tokscale is already installed."
@@ -218,25 +210,6 @@ else
   node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.openrouter) { delete d.provider.openrouter; fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
 fi
 
-if [ "$INSTALL_AUTH" = true ]; then
-  if opencode auth list 2>/dev/null | grep -i -q "google"; then
-    success "Antigravity Auth is already configured.\n"
-  else
-    info "Initializing Antigravity Auth Layer..."
-    conda deactivate 2>/dev/null || true
-    echo -e "${DIM}Opening browser for Google Antigravity authentication...${RESET}"
-    opencode auth login -p google -m "OAuth with Google (Antigravity)" || warn "Antigravity Auth skipped."
-    echo ""
-  fi
-  if [ -z "$GOOGLE_API_KEY" ]; then
-    touch "$HOME/.config/opencode/.env"
-    if ! grep -q "^GOOGLE_GENERATIVE_AI_API_KEY=" "$HOME/.config/opencode/.env" 2>/dev/null; then
-      echo 'GOOGLE_GENERATIVE_AI_API_KEY="antigravity-dummy-key"' >> "$HOME/.config/opencode/.env"
-    fi
-  fi
-else
-  node -e "const fs=require('fs'); const p=process.env.HOME+'/.config/opencode/opencode.json'; if(fs.existsSync(p)){const d=JSON.parse(fs.readFileSync(p)); if(d.provider && d.provider.google && d.provider.google.models) { delete d.provider.google.models['antigravity-gemini-3-pro']; delete d.provider.google.models['antigravity-gemini-3-flash']; delete d.provider.google.models['antigravity-claude-sonnet-4-6']; delete d.provider.google.models['antigravity-claude-opus-4-6-thinking']; if(Object.keys(d.provider.google.models).length === 0) { delete d.provider.google; } fs.writeFileSync(p, JSON.stringify(d, null, 2)); }}"
-fi
 
 # ─── Final Auth Check ──────────────────────────────────────────────────────
 echo -e "\n${BLUE}${BOLD}▶ Final Auth Status Check${RESET}"
@@ -268,16 +241,6 @@ else
   warn "OpenRouter      — skipped (optional)"
 fi
 
-if npm_installed opencode-antigravity-auth; then
-  if opencode auth list 2>/dev/null | grep -i -q "google"; then
-    success "Antigravity Auth — active"
-    ACTIVE_PROVIDERS=$((ACTIVE_PROVIDERS + 1))
-  else
-    warn "Antigravity Auth — not active (run 'opencode auth login')"
-  fi
-else
-  warn "Antigravity Auth — skipped (not installed)"
-fi
 
 if npm_installed repomix; then
   success "repomix         — active"

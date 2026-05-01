@@ -67,9 +67,9 @@ spinner_task() {
 }
 
 # ─── Global npm packages ──────────────────────────────────────────────────
-if prompt_yes_no "Remove global npm packages (opencode-ai, oh-my-opencode, opencode-antigravity-auth, tokscale, repomix)?"; then
+if prompt_yes_no "Remove global npm packages (opencode-ai, oh-my-opencode, tokscale, repomix)?"; then
   spinner_task "Removing global npm packages" \
-    npm uninstall -g opencode-ai oh-my-opencode opencode-antigravity-auth tokscale repomix
+    npm uninstall -g opencode-ai oh-my-opencode tokscale repomix
 fi
 
 # ─── npx cache ────────────────────────────────────────────────────────────

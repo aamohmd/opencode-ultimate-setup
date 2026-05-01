@@ -49,8 +49,6 @@ The stack is highly modular. The setup script will intelligently configure only 
 
 ### Ecosystem Plugins
 
-* <a href="https://github.com/NoeFabris/opencode-antigravity-auth"><img src="https://img.shields.io/badge/opencode--antigravity--auth-Plugin-black?style=for-the-badge&logo=github" height="22"></a> <img src="https://img.shields.io/github/stars/NoeFabris/opencode-antigravity-auth?style=for-the-badge&color=yellow" height="22">
-  Centralized authentication layer preventing manual token juggling.
 * <a href="https://github.com/code-yeongyu/oh-my-openagent"><img src="https://img.shields.io/badge/oh--my--openagent-Harness-black?style=for-the-badge&logo=github" height="22"></a> <img src="https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=for-the-badge&color=yellow" height="22">
   Enhances the terminal experience with plugins, themes, and specialized tools.
 * <a href="https://github.com/junhoyeo/tokscale"><img src="https://img.shields.io/badge/tokscale-Analytics-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/junhoyeo/tokscale?style=for-the-badge&color=yellow" height="22">
@@ -133,7 +131,7 @@ If you prefer to install and configure the components manually, follow these ste
 5. **Install Antigravity Auth & Tokscale**
 
    ```bash
-   npm install -g opencode-antigravity-auth tokscale
+   npm install -g tokscale
    opencode auth login -p google -m "OAuth with Google (Antigravity)"
    ```
 
@@ -151,7 +149,7 @@ Our setup is designed for efficiency and minimal overhead:
 
 - **Cost Optimization**: By leveraging the Copilot Student Pack alongside OpenRouter's free tier, the environment remains highly cost-effective.
 - **Intelligent Routing**: Use OpenRouter for bleeding-edge experimental models, Copilot for standard IDE inline completions, and Google Pro for tasks requiring vast context windows.
-- **Seamless Authentication**: The `opencode-antigravity-auth` plugin runs silently in the background, ensuring tokens stay fresh without manual intervention.
+- **Seamless Authentication**: The authentication plugin runs silently in the background, ensuring tokens stay fresh without manual intervention.
 - **Usage Tracking**: `tokscale` provides an immediate dashboard to visualize token burn across your entire stack.
 
 ---
