@@ -128,11 +128,10 @@ If you prefer to install and configure the components manually, follow these ste
    cp configs/opencode.json ~/.config/opencode/opencode.json
    ```
 
-5. **Install Antigravity Auth & Tokscale**
+5. **Install Tokscale**
 
    ```bash
    npm install -g tokscale
-   opencode auth login -p google -m "OAuth with Google (Antigravity)"
    ```
 
 6. **Install oh-my-openagent**
