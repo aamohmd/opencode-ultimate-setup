@@ -60,10 +60,10 @@ The stack is highly modular. The setup script will intelligently configure only 
 
 ### Frontend Pack (Optional)
 
-The setup prompts for **Playwright** separately from **Design Skills**:
+Included in the **Full Stack** and **Everything** profiles:
 
 **Tools:**
-- **Playwright + Chromium** — Browser automation for testing/browsing
+- **Playwright + Chromium** — Browser automation for testing/browsing (Everything profile only)
 
 **Design Skills** *(stored locally, compatible with OpenCode, Claude Code, Codex)*:
 - **impeccable** — Design implementation with 20+ commands (craft, shape, audit, polish, animate, etc.)
@@ -87,18 +87,18 @@ No extra setup is required!
 
 Adds specialized MCP servers, agent skills, and a dedicated backend agent for server-side development.
 
-**MCP Servers installed:**
-| Server | Package | Purpose |
-|---|---|---|
-| PostgreSQL | `@henkey/postgres-mcp-server` | Schema inspection, queries, index analysis |
-| Redis | `@modelcontextprotocol/server-redis` | Cache debugging, key inspection |
-| ClickHouse | `mcp-clickhouse` (Python/uv) | Analytics queries, columnar data |
-| Docker | `@modelcontextprotocol/server-docker` | Container management, log streaming |
-| Kubernetes | `kubernetes-mcp-server` | Pod management, log streaming, metrics |
-| Sentry | remote `mcp.sentry.io/mcp` | Error investigation, traces, performance |
-| Stripe | `@stripe/mcp` | Payment management, customer queries |
-| GitHub | `@modelcontextprotocol/server-github` | Repos, PRs, issues, code search |
-| Context7 | remote `mcp.context7.com/mcp` | Live framework documentation |
+**MCP Servers:**
+| Server | Package | Installation | Purpose |
+|---|---|---|---|
+| Docker | `@modelcontextprotocol/server-docker` | Optional | Container management, log streaming |
+| Sentry | remote `mcp.sentry.io/mcp` | Optional | Error investigation, traces, performance |
+| Stripe | `@stripe/mcp` | Optional | Payment management, customer queries |
+| Context7 | remote `mcp.context7.com/mcp` | Optional | Live framework documentation |
+| PostgreSQL | `@henkey/postgres-mcp-server` | Config only | Schema inspection, queries, index analysis |
+| Redis | `@modelcontextprotocol/server-redis` | Config only | Cache debugging, key inspection |
+| ClickHouse | `mcp-clickhouse` (Python/uv) | Config only | Analytics queries, columnar data |
+| Kubernetes | `kubernetes-mcp-server` | Config only | Pod management, log streaming, metrics |
+| GitHub | `@modelcontextprotocol/server-github` | Config only | Repos, PRs, issues, code search |
 
 **Skills installed:** `senior-backend`, `database-designer`, `python-fastapi-development`, `golang-backend-development`, `aws-solution-architect`, `backend-patterns`
 
@@ -132,15 +132,17 @@ nano .env # or use your favorite editor
 make install
 ```
 
-### Frontend Pack (Optional)
+### Installation Profiles
 
-The Frontend Pack (design skills + Playwright) is installed as part of `make install`. During installation, you will be prompted to choose which modules to install:
+During installation, you will be prompted to choose an installation profile:
 
-- **Backend Only** – MCP servers and backend skills
-- **Frontend Only** – Design skills and Playwright
-- **Full Stack** – Backend + Frontend + all optional tools
+- **Minimal** – Core engine only (opencode)
+- **Backend Dev** – Core + Backend MCPs (4 optional) + 6 backend skills + @backend agent
+- **Full Stack** – Backend Dev + 4 design skills + tokscale + repomix
+- **Everything** – Full Stack + Playwright + oh-my-openagent
+- **Custom** – Pick each component individually
 
-Select the profile that matches your workflow. You can re-run `make install` at any time to modify your setup.
+You can re-run `make install` at any time to modify your setup.
 
 ---
 
