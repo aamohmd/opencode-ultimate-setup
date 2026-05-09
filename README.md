@@ -14,6 +14,7 @@
 - [Overview](#overview)
 - [What's Included](#whats-included)
 - [Modules](#modules)
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Manual Configuration](#manual-configuration)
 - [Architecture & Strategy](#architecture--strategy)
@@ -64,13 +65,11 @@ The setup prompts for **Playwright** separately from **Design Skills**:
 **Tools:**
 - **Playwright + Chromium** — Browser automation for testing/browsing
 
-**Design Skills** (stored in repo, installed offline):
+**Design Skills** *(stored locally, compatible with OpenCode, Claude Code, Codex)*:
 - **impeccable** — Design implementation with 20+ commands (craft, shape, audit, polish, animate, etc.)
-- **frontend-design** — Production-grade frontend with anti-AI-slop guidelines
-- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export
-- **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY)
-
-All skills use `skills/` format (compatible with OpenCode, Claude Code, Codex).**
+- **frontend-design** — Production-grade frontend with anti-AI-slop guidelines.
+- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export.
+- **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY).
 
 ### Default System Prompts
 The core configuration includes custom system instructions based on **Andrej Karpathy's LLM coding guidelines**. This provides:
@@ -94,7 +93,7 @@ Adds specialized MCP servers, agent skills, and a dedicated backend agent for se
 | PostgreSQL | `@henkey/postgres-mcp-server` | Schema inspection, queries, index analysis |
 | Redis | `@modelcontextprotocol/server-redis` | Cache debugging, key inspection |
 | ClickHouse | `mcp-clickhouse` (Python/uv) | Analytics queries, columnar data |
-| Docker | `mcp-server-docker` | Container management, log streaming |
+| Docker | `@modelcontextprotocol/server-docker` | Container management, log streaming |
 | Kubernetes | `kubernetes-mcp-server` | Pod management, log streaming, metrics |
 | Sentry | remote `mcp.sentry.io/mcp` | Error investigation, traces, performance |
 | Stripe | `@stripe/mcp` | Payment management, customer queries |
@@ -107,17 +106,26 @@ Adds specialized MCP servers, agent skills, and a dedicated backend agent for se
 
 ---
 
+## Prerequisites
+
+Before running the installer, ensure your system has the following dependencies:
+- **Node.js** (v18+)
+- **Git**
+- **uv** (Optional, but required if you want to use the ClickHouse Python MCP). Install via: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+---
+
 ## Installation
 
 ### Automated Setup (Recommended)
 
-The quickest way to get started is to use the automated setup script via the `Makefile`. This handles dependencies, authentication, and provider configuration automatically.
+The quickest way to get started is to use the automated setup script via the `Makefile`. This handles dependencies, authentication, and strict schema configuration automatically.
 
 ```bash
 git clone https://github.com/aamohmd/opencode-ultimate-setup.git
 cd opencode-ultimate-setup
 
-# Copy the env template and add your API keys
+# Copy the env template and add your API keys (optional, installer will prompt you)
 cp configs/openrouter.env .env
 nano .env # or use your favorite editor
 
@@ -126,16 +134,13 @@ make install
 
 ### Frontend Pack (Optional)
 
-The setup script will prompt you to install the **Frontend Pack** which includes:
-- UI/UX skills (impeccable, huashu-design, ui-ux-pro-max, taste)
-- Playwright with Chromium browser
+The Frontend Pack (design skills + Playwright) is installed as part of `make install`. During installation, you will be prompted to choose which modules to install:
 
-You can also install/uninstall it separately:
+- **Backend Only** – MCP servers and backend skills
+- **Frontend Only** – Design skills and Playwright
+- **Full Stack** – Backend + Frontend + all optional tools
 
-```bash
-make frontend-install
-make frontend-uninstall
-```
+Select the profile that matches your workflow. You can re-run `make install` at any time to modify your setup.
 
 ---
 
@@ -151,48 +156,51 @@ make uninstall
 
 ## Manual Configuration
 
-If you prefer to install and configure the components manually, follow these steps:
+If you prefer to install and configure the components manually without the scripts, follow these steps:
 
 1. **Install opencode**
 
-   ```bash
-   npm install -g opencode-ai
-   ```
+  ```bash
+  npm install -g opencode-ai
+  ```
 
 2. **Configure GitHub Copilot**
-   Ensure your Student Pack is active, then authenticate via terminal:
 
-   ```bash
-   opencode auth login -p "GitHub Copilot"
-   ```
+  Ensure your Student Pack is active, then authenticate via terminal:
+
+  ```bash
+  opencode auth login -p "github-copilot"
+  ```
 
 3. **Configure API Providers**
-   Copy the environment template and add your API keys for Google and OpenRouter:
 
-   ```bash
-   cp configs/openrouter.env .env
-   nano .env
-   ```
+  Copy the environment template and add your API keys for Google and OpenRouter:
+
+  ```bash
+  mkdir -p ~/.config/opencode
+  cp configs/openrouter.env ~/.config/opencode/.env
+  ```
 
 4. **Apply Configurations**
-   Copy the baseline configurations to your system:
 
-   ```bash
-   mkdir -p ~/.config/opencode
-   cp configs/opencode.json ~/.config/opencode/opencode.json
-   ```
+  Copy the baseline configurations to your system:
 
-5. **Install Tokscale**
+  ```bash
+  cp configs/opencode.json ~/.config/opencode/opencode.json
+  ```
 
-   ```bash
-   npm install -g tokscale
-   ```
+5. **Install Tokscale & Repomix**
+
+  ```bash
+  npm install -g tokscale repomix
+  ```
 
 6. **Install oh-my-openagent**
 
-   ```bash
-   npx oh-my-openagent install
-   ```
+  ```bash
+  npm install -g oh-my-opencode
+  cp configs/oh-my-openagent.json ~/.config/opencode/oh-my-openagent.json
+  ```
 
 ---
 
