@@ -83,27 +83,28 @@ No extra setup is required!
 
 ## 🔧 Modules
 
-### Backend Module
+### Backend Pack (Optional)
 
-Adds specialized MCP servers, agent skills, and a dedicated backend agent for server-side development.
+Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
 
-**MCP Servers:**
-| Server | Package | Installation | Purpose |
-|---|---|---|---|
-| Docker | `@modelcontextprotocol/server-docker` | Optional | Container management, log streaming |
-| Sentry | remote `mcp.sentry.io/mcp` | Optional | Error investigation, traces, performance |
-| Stripe | `@stripe/mcp` | Optional | Payment management, customer queries |
-| Context7 | remote `mcp.context7.com/mcp` | Optional | Live framework documentation |
-| PostgreSQL | `@henkey/postgres-mcp-server` | Config only | Schema inspection, queries, index analysis |
-| Redis | `@modelcontextprotocol/server-redis` | Config only | Cache debugging, key inspection |
-| ClickHouse | `mcp-clickhouse` (Python/uv) | Config only | Analytics queries, columnar data |
-| Kubernetes | `kubernetes-mcp-server` | Config only | Pod management, log streaming, metrics |
-| GitHub | `@modelcontextprotocol/server-github` | Config only | Repos, PRs, issues, code search |
+**MCP Servers** *(all optional, prompted during install)*:
+| Server | Package | Purpose |
+|---|---|---|
+| Docker | `@modelcontextprotocol/server-docker` | Container management, log streaming |
+| Sentry | remote `mcp.sentry.io/mcp` | Error investigation, traces, performance |
+| Stripe | `@stripe/mcp` | Payment management, customer queries |
+| Context7 | remote `mcp.context7.com/mcp` | Live framework documentation |
 
-**Skills installed:** `senior-backend`, `database-designer`, `python-fastapi-development`, `golang-backend-development`, `aws-solution-architect`, `backend-patterns`
+**Skills** *(6 curated skills for backend architecture)*:
+- `senior-backend` — Senior backend engineer patterns and best practices
+- `database-designer` — Database schema design, migrations, query optimization
+- `python-fastapi-development` — FastAPI framework expertise
+- `golang-backend-development` — Go backend development
+- `aws-solution-architect` — AWS cloud architecture patterns
+- `backend-patterns` — Common backend architecture patterns
 
-**Agents:** 
-- `@backend` — Senior backend engineer with database expertise, all backend skills, and MCP access (auto-installed)
+**Agent:**
+- `@backend` — Senior backend engineer with database expertise, all 6 skills, and optional MCP access (auto-installed when Backend Pack selected)
 - `@frontend` — Senior frontend engineer with UI/UX expertise and design skills (available in configs/agents/frontend.md, must be manually installed)
 
 ---
@@ -113,7 +114,6 @@ Adds specialized MCP servers, agent skills, and a dedicated backend agent for se
 Before running the installer, ensure your system has the following dependencies:
 - **Node.js** (v18+)
 - **Git**
-- **uv** (Optional, but required if you want to use the ClickHouse Python MCP). Install via: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
 ---
 
