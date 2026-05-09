@@ -1,0 +1,57 @@
+{
+  "mcp": {
+    "postgres": {
+      "enabled": false,
+      "type": "local",
+      "command": ["npx", "-y", "@henkey/postgres-mcp-server", "--connection-string", "postgresql://user:pass@localhost:5432/db"]
+    },
+    "redis": {
+      "enabled": false,
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-redis"],
+      "environment": { "REDIS_URL": "redis://localhost:6379" }
+    },
+    "clickhouse": {
+      "enabled": false,
+      "type": "local",
+      "command": ["uvx", "mcp-clickhouse"],
+      "environment": {
+        "CLICKHOUSE_HOST": "http://localhost:8123",
+        "CLICKHOUSE_USER": "default",
+        "CLICKHOUSE_PASSWORD": ""
+      }
+    },
+    "docker": {
+      "enabled": false,
+      "type": "local",
+      "command": ["npx", "-y", "mcp-server-docker"]
+    },
+    "kubernetes": {
+      "enabled": false,
+      "type": "local",
+      "command": ["npx", "-y", "kubernetes-mcp-server"]
+    },
+    "sentry": {
+      "enabled": false,
+      "type": "remote",
+      "url": "https://mcp.sentry.io/mcp"
+    },
+    "stripe": {
+      "enabled": false,
+      "type": "local",
+      "command": ["npx", "-y", "@stripe/mcp", "--tools=all"],
+      "environment": { "STRIPE_SECRET_KEY": "sk_test_..." }
+    },
+    "github": {
+      "enabled": false,
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "environment": { "GITHUB_PERSONAL_ACCESS_TOKEN": "" }
+    },
+    "context7": {
+      "enabled": true,
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}

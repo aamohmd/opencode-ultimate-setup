@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "figma": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-figma"],
+      "env": { "FIGMA_ACCESS_TOKEN": "figd_..." }
+    },
+    "puppeteer": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    },
+    "vercel": {
+      "enabled": false,
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-vercel"],
+      "env": { "VERCEL_ACCESS_TOKEN": "..." }
+    }
+  }
+}

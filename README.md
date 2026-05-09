@@ -13,6 +13,7 @@
 
 - [Overview](#overview)
 - [What's Included](#whats-included)
+- [Modules](#modules)
 - [Installation](#installation)
 - [Manual Configuration](#manual-configuration)
 - [Architecture & Strategy](#architecture--strategy)
@@ -56,6 +57,21 @@ The stack is highly modular. The setup script will intelligently configure only 
 * <a href="https://github.com/yamadashy/repomix"><img src="https://img.shields.io/badge/repomix-Context_Packer-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/yamadashy/repomix?style=for-the-badge&color=yellow" height="22">
   Packs an entire repository into a single AI-readable file. Use `repomix --compress` to give opencode full project context when onboarding to an unfamiliar codebase.
 
+### Frontend Pack (Optional)
+
+The setup prompts for **Playwright** separately from **Design Skills**:
+
+**Tools:**
+- **Playwright + Chromium** — Browser automation for testing/browsing
+
+**Design Skills** (stored in repo, installed offline):
+- **impeccable** — Design implementation with 20+ commands (craft, shape, audit, polish, animate, etc.)
+- **frontend-design** — Production-grade frontend with anti-AI-slop guidelines
+- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export
+- **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY)
+
+All skills use `skills/` format (compatible with OpenCode, Claude Code, Codex).**
+
 ### Default System Prompts
 The core configuration includes custom system instructions based on **Andrej Karpathy's LLM coding guidelines**. This provides:
 - **Think Before Coding**: Explicit assumptions and pushing back on bad ideas
@@ -63,6 +79,31 @@ The core configuration includes custom system instructions based on **Andrej Kar
 - **Surgical Changes**: Touching only what needs to be changed
 - **Goal-Driven Execution**: Verifiable success loops
 No extra setup is required!
+
+---
+
+## 🔧 Modules
+
+### Backend Module
+
+Adds specialized MCP servers, agent skills, and a dedicated backend agent for server-side development.
+
+**MCP Servers installed:**
+| Server | Package | Purpose |
+|---|---|---|
+| PostgreSQL | `@henkey/postgres-mcp-server` | Schema inspection, queries, index analysis |
+| Redis | `@modelcontextprotocol/server-redis` | Cache debugging, key inspection |
+| ClickHouse | `mcp-clickhouse` (Python/uv) | Analytics queries, columnar data |
+| Docker | `mcp-server-docker` | Container management, log streaming |
+| Kubernetes | `kubernetes-mcp-server` | Pod management, log streaming, metrics |
+| Sentry | remote `mcp.sentry.io/mcp` | Error investigation, traces, performance |
+| Stripe | `@stripe/mcp` | Payment management, customer queries |
+| GitHub | `@modelcontextprotocol/server-github` | Repos, PRs, issues, code search |
+| Context7 | remote `mcp.context7.com/mcp` | Live framework documentation |
+
+**Skills installed:** `senior-backend`, `database-designer`, `python-fastapi-development`, `golang-backend-development`, `aws-solution-architect`, `backend-patterns`
+
+**Agent:** `@backend`, a senior backend engineer persona with all skills and MCPs pre-loaded.
 
 ---
 
@@ -81,6 +122,19 @@ cp configs/openrouter.env .env
 nano .env # or use your favorite editor
 
 make install
+```
+
+### Frontend Pack (Optional)
+
+The setup script will prompt you to install the **Frontend Pack** which includes:
+- UI/UX skills (impeccable, huashu-design, ui-ux-pro-max, taste)
+- Playwright with Chromium browser
+
+You can also install/uninstall it separately:
+
+```bash
+make frontend-install
+make frontend-uninstall
 ```
 
 ---

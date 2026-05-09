@@ -1,112 +1,178 @@
 #!/usr/bin/env bash
 # =============================================================================
-# opencode Ultimate Stack — Teardown
+# opencode Ultimate Stack — Uninstaller
+# =============================================================================
+# Usage:
+#   ./uninstall.sh                interactive (default)
+#   ./uninstall.sh --yes          accept all defaults non-interactively
+#   ./uninstall.sh --help
 # =============================================================================
 
-set -e
+set -euo pipefail
 
-BLUE='\033[38;2;0;102;255m'
-CYAN='\033[38;2;0;210;255m'
-GREEN='\033[38;2;0;255;157m'
-YELLOW='\033[38;2;255;184;0m'
-RED='\033[38;2;255;0;85m'
-BOLD='\033[1m'
-DIM='\033[2m'
-RESET='\033[0m'
+# =============================================================================
+# Parse flags
+# =============================================================================
+NON_INTERACTIVE=false
 
-clear
+for arg in "$@"; do
+  case "$arg" in
+    --yes|-y|--all) NON_INTERACTIVE=true ;;
+    --help|-h)
+      sed -n 's/^# \{0,2\}//p' "$0" | head -8
+      exit 0 ;;
+    *)
+      printf 'Unknown flag: %s  (try --help)\n' "$arg" >&2
+      exit 1 ;;
+  esac
+done
 
-echo -e "${BLUE}${BOLD}"
-echo "                                         __   "
-echo "  ____  ____  ___  ____  _________  ____/ /__ "
-echo " / __ \/ __ \/ _ \/ __ \/ ___/ __ \/ __  / _ \\"
-echo "/ /_/ / /_/ /  __/ / / / /__/ /_/ / /_/ /  __/"
-echo "\____/ .___/\___/_/ /_/\___/\____/\__,_/\___/ "
-echo "    /_/                                        "
-echo -e "${RESET}${DIM} Teardown${RESET}\n"
+# =============================================================================
+# Color & Logging
+# =============================================================================
+BLUE="" CYAN="" GREEN="" YELLOW="" RED="" BOLD="" DIM="" RESET=""
+_setup_colors() {
+  [ ! -t 1 ]                 && return
+  [ "${NO_COLOR:-}" != "" ]  && return
+  [ "${TERM:-}" = "dumb" ]   && return
+  local n; n=$(tput colors 2>/dev/null || echo 0)
+  [ "$n" -lt 8 ]             && return
+  BLUE='\033[34m'  CYAN='\033[36m'  GREEN='\033[32m'
+  YELLOW='\033[33m' RED='\033[31m'  BOLD='\033[1m'
+  DIM='\033[2m'    RESET='\033[0m'
+}
+_setup_colors
 
-info()    { echo -e "${CYAN}❯${RESET} $1"; }
-success() { echo -e "${GREEN}✔${RESET} $1"; }
-warn()    { echo -e "${YELLOW}⚠${RESET} $1"; }
+info()    { printf "  ${CYAN}>${RESET} %b\n" "$1"; }
+success() { printf "  ${GREEN}v${RESET} %b\n" "$1"; }
+warn()    { printf "  ${YELLOW}!${RESET} %b\n" "$1"; }
+detail()  { printf "  ${DIM}  %b${RESET}\n" "$1"; }
 
 prompt_yes_no() {
+  local question="$1" default="${2:-Y}"
+  local DEFAULT_UP; DEFAULT_UP=$(printf '%s' "$default" | tr '[:lower:]' '[:upper:]')
+  local hint; [ "$DEFAULT_UP" = "Y" ] && hint="Y/n" || hint="y/N"
+  [ "$NON_INTERACTIVE" = true ] && { [ "$DEFAULT_UP" = "Y" ] && return 0 || return 1; }
   while true; do
-    echo -e -n "${CYAN}?${RESET} ${BOLD}$1${RESET} ${DIM}(y/N)${RESET} "
-    read -r yn
-    case ${yn:-N} in
-      [Yy]*) return 0 ;;
-      [Nn]*) return 1 ;;
-      *) echo -e "${RED}Please answer yes or no.${RESET}" ;;
+    printf "  ${CYAN}?${RESET} ${BOLD}%s${RESET} [%s] " "$question" "$hint"
+    read -r yn </dev/tty
+    yn="${yn:-$default}"
+    local yn_low; yn_low=$(printf '%s' "$yn" | tr '[:upper:]' '[:lower:]')
+    case "$yn_low" in
+      y|yes) return 0 ;;
+      n|no)  return 1 ;;
+      *)     printf "  ${RED}Please answer y or n.${RESET}\n" ;;
     esac
   done
 }
 
+npm_installed() { npm list -g "$1" --depth=0 >/dev/null 2>&1; }
+
 spinner_task() {
-  local msg="$1"
-  shift
-  local tmpfile
-  tmpfile=$(mktemp)
-  "$@" > "$tmpfile" 2>&1 &
-  local pid=$!
-  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-  printf "${CYAN}⠋${RESET} %s..." "$msg"
+  local msg="$1"; shift
+  if [ ! -t 1 ]; then
+    printf "  > %s...\n" "$msg"
+    local code=0; "$@" >/dev/null 2>&1 || code=$?
+    [ "$code" -eq 0 ] && printf "  v %s  done\n" "$msg" || printf "  ! %s  failed\n" "$msg"
+    return "$code"
+  fi
+  printf "  ${CYAN}|${RESET} %s..." "$msg"
+  local tmpfile; tmpfile=$(mktemp)
+  "$@" >"$tmpfile" 2>&1 &
+  local pid=$! spinstr='/-\|' code=0
   while kill -0 "$pid" 2>/dev/null; do
-    local temp=${spinstr#?}
-    printf "\r${CYAN}%c${RESET} %s..." "$spinstr" "$msg"
-    spinstr=$temp${spinstr%"$temp"}
+    local head="${spinstr:0:1}"
+    printf "\r  ${CYAN}%s${RESET} %s..." "$head" "$msg"
+    spinstr="${spinstr:1}${head}"
     sleep 0.1
   done
-  local exit_code=0
-  wait "$pid" || exit_code=$?
-  if [ $exit_code -eq 0 ]; then
-    printf "\r${GREEN}✔${RESET} %s... ${GREEN}Done!${RESET}       \n" "$msg"
+  wait "$pid" || code=$?
+  if [ "$code" -eq 0 ]; then
+    printf "\r  ${GREEN}v${RESET} %s  ${DIM}done${RESET}               \n" "$msg"
   else
-    printf "\r${YELLOW}⚠${RESET} %s... ${YELLOW}Nothing to remove.${RESET}\n" "$msg"
+    printf "\r  ${YELLOW}!${RESET} %s  ${YELLOW}failed (non-fatal)${RESET}\n" "$msg"
   fi
-  rm -f "$tmpfile"
+  rm -f "$tmpfile"; return "$code"
 }
 
-# ─── Global npm packages ──────────────────────────────────────────────────
-if prompt_yes_no "Remove global npm packages (opencode-ai, oh-my-opencode, tokscale, repomix)?"; then
-  spinner_task "Removing global npm packages" \
-    npm uninstall -g opencode-ai oh-my-opencode tokscale repomix
+sed_inplace() { sed -i.bak "$1" "$2" && rm -f "${2}.bak"; }
+
+OPENCODE_CONFIG_DIR="${HOME}/.config/opencode"
+
+# =============================================================================
+# BANNER
+# =============================================================================
+clear 2>/dev/null || true
+printf "${RED}${BOLD}"
+cat << 'BANNER'
+   __  __      _           __        __ __
+  / / / /____ (_)____  ___/ /____ _ / // /
+ / /_/ // __// // __/ /_  _// __ `/ / // /
+ \____//_/  /_//_/     /_/  \__,_/ /_//_/ 
+BANNER
+printf "${RESET}${DIM}  opencode Ultimate Stack  --  Removal Tool${RESET}\n\n"
+
+if ! prompt_yes_no "This will remove the opencode stack and its configurations. Continue?" "N"; then
+  printf "\n  ${YELLOW}Uninstallation cancelled.${RESET}\n"
+  exit 0
 fi
 
-# ─── npx cache ────────────────────────────────────────────────────────────
-if prompt_yes_no "Clear npx cache for oh-my-opencode/oh-my-openagent?"; then
-  spinner_task "Clearing npx cache" bash -c \
-    'find "$HOME/.npm/_npx" -maxdepth 2 -type d 2>/dev/null | while read d; do
-       ls "$d/node_modules/" 2>/dev/null | grep -q "oh-my-open" && rm -rf "$d" || true
-     done; true'
-fi
+# =============================================================================
+# 1. Global NPM Packages
+# =============================================================================
+printf "\n${BLUE}${BOLD}  -- Uninstalling NPM Packages${RESET}\n\n"
 
-# ─── opencode binary ──────────────────────────────────────────────────────
-if prompt_yes_no "Remove opencode binary (~/.opencode)?"; then
-  spinner_task "Removing ~/.opencode" rm -rf "$HOME/.opencode"
-fi
+PACKAGES=(
+  "opencode-ai"
+  "mcp-server-docker"
+  "@stripe/mcp"
+  "tokscale"
+  "oh-my-opencode"
+  "repomix"
+)
 
-# ─── Config directory ─────────────────────────────────────────────────────
-if prompt_yes_no "Remove config directory (~/.config/opencode)?"; then
-  spinner_task "Removing ~/.config/opencode" rm -rf "$HOME/.config/opencode"
-fi
-
-# ─── Shell PATH entry ─────────────────────────────────────────────────────
-info "Checking shell config for opencode PATH entries..."
-FOUND_PATH=false
-for rc in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.zprofile" "$HOME/.bash_profile"; do
-  if [ -f "$rc" ] && grep -q "\.opencode" "$rc" 2>/dev/null; then
-    FOUND_PATH=true
-    warn "Found opencode PATH entry in $rc — remove manually:"
-    grep -n "\.opencode" "$rc" | while read -r line; do
-      echo -e "  ${DIM}$line${RESET}"
-    done
-    echo ""
+for pkg in "${PACKAGES[@]}"; do
+  if npm_installed "$pkg"; then
+    spinner_task "Removing ${pkg}" npm uninstall -g "$pkg"
+  else
+    detail "${pkg} is not installed"
   fi
 done
-[ "$FOUND_PATH" = false ] && success "No PATH entries found.\n"
 
-echo ""
-echo -e "${BOLD}${GREEN}╔══════════════════════════════════════╗${RESET}"
-echo -e "${BOLD}${GREEN}║   ✔  Teardown complete.              ║${RESET}"
-echo -e "${BOLD}${GREEN}╚══════════════════════════════════════╝${RESET}"
-echo ""
+if npm_installed playwright; then
+  if prompt_yes_no "Remove Playwright and its browser binaries? (May affect other projects using Playwright globally)" "N"; then
+    set +e
+    spinner_task "Uninstalling Playwright browsers" npx playwright uninstall --all
+    set -e
+    spinner_task "Removing playwright package" npm uninstall -g playwright
+  else
+    detail "Playwright removal skipped"
+  fi
+fi
+
+# =============================================================================
+# 2. Config Files
+# =============================================================================
+printf "\n${BLUE}${BOLD}  -- Cleaning Configurations${RESET}\n\n"
+
+if [ -d "$OPENCODE_CONFIG_DIR" ]; then
+  if prompt_yes_no "Delete the ~/.config/opencode directory? (Removes all MCPs, skills, and agents)" "Y"; then
+    spinner_task "Deleting ${OPENCODE_CONFIG_DIR}" rm -rf "$OPENCODE_CONFIG_DIR"
+  else
+    detail "Configuration directory preserved"
+  fi
+else
+  detail "~/.config/opencode directory not found"
+fi
+
+if [ -f ".env" ]; then
+  if grep -qE "^(GOOGLE_API_KEY|OPENROUTER_API_KEY)=" ".env"; then
+    if prompt_yes_no "Remove added API keys from local .env file?" "Y"; then
+      sed_inplace '/^GOOGLE_API_KEY=/d' ".env"
+      sed_inplace '/^OPENROUTER_API_KEY=/d' ".env"
+      success "Cleaned local .env file"
+    fi
+  fi
+fi
+
+printf "\n${GREEN}${BOLD}  v  Uninstallation complete.${RESET}\n\n"
