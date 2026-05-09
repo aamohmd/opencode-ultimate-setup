@@ -102,7 +102,9 @@ Adds specialized MCP servers, agent skills, and a dedicated backend agent for se
 
 **Skills installed:** `senior-backend`, `database-designer`, `python-fastapi-development`, `golang-backend-development`, `aws-solution-architect`, `backend-patterns`
 
-**Agent:** `@backend`, a senior backend engineer persona with all skills and MCPs pre-loaded.
+**Agents:** 
+- `@backend` — Senior backend engineer with database expertise, all backend skills, and MCP access (auto-installed)
+- `@frontend` — Senior frontend engineer with UI/UX expertise and design skills (available in configs/agents/frontend.md, must be manually installed)
 
 ---
 
@@ -188,8 +190,17 @@ If you prefer to install and configure the components manually without the scrip
   Copy the baseline configurations to your system:
 
   ```bash
+  mkdir -p ~/.config/opencode
   cp configs/opencode.json ~/.config/opencode/opencode.json
+  
+  # If using backend MCPs, also copy the backend config template
+  cp configs/opencode-backend.json ~/.config/opencode/opencode-backend.json
+  
+  # If using frontend skills, copy frontend config template
+  cp configs/opencode-frontend.json ~/.config/opencode/opencode-frontend.json
   ```
+
+  **Note:** The automated setup.sh performs additional schema validation and merges configurations intelligently. Manual setup requires careful JSON validation.
 
 5. **Install Tokscale & Repomix**
 
@@ -197,11 +208,12 @@ If you prefer to install and configure the components manually without the scrip
   npm install -g tokscale repomix
   ```
 
-6. **Install oh-my-openagent**
+6. **Install oh-my-openagent (Optional)**
 
   ```bash
   npm install -g oh-my-opencode
-  cp configs/oh-my-openagent.json ~/.config/opencode/oh-my-openagent.json
+  mkdir -p ~/.config/opencode
+  cp configs/oh-my-openagent/.openagentrc ~/.config/opencode/oh-my-openagent.rc
   ```
 
 ---
