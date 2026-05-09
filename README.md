@@ -52,7 +52,7 @@ The stack is highly modular. The setup script will intelligently configure only 
 ### Ecosystem Plugins
 
 * <a href="https://github.com/code-yeongyu/oh-my-openagent"><img src="https://img.shields.io/badge/oh--my--openagent-Harness-black?style=for-the-badge&logo=github" height="22"></a> <img src="https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=for-the-badge&color=yellow" height="22">
-  Enhances the terminal experience with plugins, themes, and specialized tools.
+  Enhances the terminal experience with plugins, themes, and specialized tools. Installed under the **Everything** profile only.
 * <a href="https://github.com/junhoyeo/tokscale"><img src="https://img.shields.io/badge/tokscale-Analytics-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/junhoyeo/tokscale?style=for-the-badge&color=yellow" height="22">
   High-performance CLI tool and visualization dashboard for tracking token usage and costs.
 * <a href="https://github.com/yamadashy/repomix"><img src="https://img.shields.io/badge/repomix-Context_Packer-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/yamadashy/repomix?style=for-the-badge&color=yellow" height="22">
@@ -63,21 +63,24 @@ The stack is highly modular. The setup script will intelligently configure only 
 Included in the **Full Stack** and **Everything** profiles:
 
 **Tools:**
-- **Playwright + Chromium** — Browser automation for testing/browsing (Everything profile only)
+- **Playwright + Chromium** — Browser automation for testing/browsing (**Everything** profile only; prompted during Custom install)
 
-**Design Skills** *(stored locally, compatible with OpenCode, Claude Code, Codex)*:
+**Design Skills** *(stored locally, compatible with opencode, Claude Code, Codex)*:
 - **impeccable** — Design implementation with 20+ commands (craft, shape, audit, polish, animate, etc.)
-- **frontend-design** — Production-grade frontend with anti-AI-slop guidelines.
-- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export.
-- **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY).
+- **frontend-design** — Production-grade frontend with anti-AI-slop guidelines
+- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export
+- **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY)
 
 ### Default System Prompts
-The core configuration includes custom system instructions based on **Andrej Karpathy's LLM coding guidelines**. This provides:
-- **Think Before Coding**: Explicit assumptions and pushing back on bad ideas
-- **Simplicity First**: Minimum viable code without over-engineering
-- **Surgical Changes**: Touching only what needs to be changed
-- **Goal-Driven Execution**: Verifiable success loops
-No extra setup is required!
+
+The core configuration includes custom system instructions based on **Andrej Karpathy's LLM coding guidelines**:
+
+- **Think Before Coding** — Explicit assumptions and pushback on bad ideas
+- **Simplicity First** — Minimum viable code without over-engineering
+- **Surgical Changes** — Touching only what needs to change
+- **Goal-Driven Execution** — Verifiable success loops
+
+No extra setup required.
 
 ---
 
@@ -88,14 +91,16 @@ No extra setup is required!
 Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
 
 **MCP Servers** *(all optional, prompted during install)*:
-| Server | Package | Purpose |
-|---|---|---|
-| Docker | `@modelcontextprotocol/server-docker` | Container management, log streaming |
-| Sentry | remote `mcp.sentry.io/mcp` | Error investigation, traces, performance |
-| Stripe | `@stripe/mcp` | Payment management, customer queries |
-| Context7 | remote `mcp.context7.com/mcp` | Live framework documentation |
+
+| Server   | Package / Endpoint                  | Purpose                                          |
+|----------|-------------------------------------|--------------------------------------------------|
+| Docker   | `mcp-server-docker` (npm)           | Container management, log streaming              |
+| Sentry   | `mcp.sentry.io/mcp` (remote OAuth)  | Error investigation, traces, performance         |
+| Stripe   | `@stripe/mcp` (npm)                 | Payment management, customer queries             |
+| Context7 | `mcp.context7.com/mcp` (remote)     | Live framework documentation (add `use context7` to any prompt) |
 
 **Skills** *(6 curated skills for backend architecture)*:
+
 - `senior-backend` — Senior backend engineer patterns and best practices
 - `database-designer` — Database schema design, migrations, query optimization
 - `python-fastapi-development` — FastAPI framework expertise
@@ -103,17 +108,19 @@ Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
 - `aws-solution-architect` — AWS cloud architecture patterns
 - `backend-patterns` — Common backend architecture patterns
 
-**Agent:**
-- `@backend` — Senior backend engineer with database expertise, all 6 skills, and optional MCP access (auto-installed when Backend Pack selected)
-- `@frontend` — Senior frontend engineer with UI/UX expertise and design skills (available in configs/agents/frontend.md, must be manually installed)
+**Agents:**
+
+- `@backend` — Senior backend engineer with database expertise, all 6 skills, and optional MCP access. Auto-installed when the Backend Pack is selected.
+- `@frontend` — Senior frontend engineer with UI/UX expertise and design skills. Available at `configs/agents/frontend.md`; must be copied manually.
 
 ---
 
 ## Prerequisites
 
-Before running the installer, ensure your system has the following dependencies:
-- **Node.js** (v18+)
+- **Node.js** v18 or higher
+- **npm**
 - **Git**
+- **bash** 3.2 or higher (macOS ships with 3.2; Linux typically has 5+)
 
 ---
 
@@ -121,36 +128,61 @@ Before running the installer, ensure your system has the following dependencies:
 
 ### Automated Setup (Recommended)
 
-The quickest way to get started is to use the automated setup script via the `Makefile`. This handles dependencies, authentication, and strict schema configuration automatically.
-
 ```bash
 git clone https://github.com/aamohmd/opencode-ultimate-setup.git
 cd opencode-ultimate-setup
 
-# Copy the env template and add your API keys (optional, installer will prompt you)
+# Optional: pre-fill API keys before running
 cp configs/openrouter.env .env
-nano .env # or use your favorite editor
+nano .env
 
 make install
 ```
 
+### CLI Flags
+
+The installer supports the following flags, which can also be passed via `make`:
+
+| Flag | Description |
+|------|-------------|
+| `--profile=<name>` | Skip the profile picker. Values: `minimal`, `backend`, `fullstack`, `everything`, `custom` |
+| `--yes` | Non-interactive mode — accept all defaults automatically |
+| `--dry-run` | Preview every action without making any changes |
+| `--verbose` | Print full installer output when a step fails |
+| `--help` | Show usage information |
+
+Examples:
+
+```bash
+./setup.sh --profile=fullstack
+./setup.sh --profile=everything --yes
+./setup.sh --dry-run
+```
+
 ### Installation Profiles
 
-During installation, you will be prompted to choose an installation profile:
+| Profile | What's included |
+|---------|----------------|
+| **Minimal** | Core engine (`opencode-ai`) only |
+| **Backend Dev** | Core + Backend MCPs (4, each optional) + 6 backend skills + `@backend` agent |
+| **Full Stack** | Backend Dev + 4 design skills + tokscale + repomix |
+| **Everything** | Full Stack + Playwright + Chromium + oh-my-openagent |
+| **Custom** | Pick each component individually |
 
-- **Minimal** – Core engine only (opencode)
-- **Backend Dev** – Core + Backend MCPs (4 optional) + 6 backend skills + @backend agent
-- **Full Stack** – Backend Dev + 4 design skills + tokscale + repomix
-- **Everything** – Full Stack + Playwright + oh-my-openagent
-- **Custom** – Pick each component individually
+### Re-running the Installer
 
-You can re-run `make install` at any time to modify your setup.
+`make install` (or `./setup.sh`) is fully **idempotent**. On a re-run, every component is checked before prompting:
+
+- npm packages already installed → reported as "already configured", no re-install
+- MCP servers already in `opencode.json` → skipped silently
+- Skills or agents already copied → skipped per file
+- Providers already authenticated / API key already in `.env` → skipped
+
+This means you can safely re-run at any time to add or update individual components without touching what's already set up.
 
 ---
 
 ## Uninstallation
-
-If you need to remove the stack and its configurations, you can use the provided teardown script:
 
 ```bash
 make uninstall
@@ -160,72 +192,62 @@ make uninstall
 
 ## Manual Configuration
 
-If you prefer to install and configure the components manually without the scripts, follow these steps:
+If you prefer to configure components without the script:
 
-1. **Install opencode**
+**1. Install opencode**
 
-  ```bash
-  npm install -g opencode-ai
-  ```
+```bash
+npm install -g opencode-ai
+```
 
-2. **Configure GitHub Copilot**
+**2. Authenticate GitHub Copilot**
 
-  Ensure your Student Pack is active, then authenticate via terminal:
+```bash
+opencode auth login -p "github-copilot"
+```
 
-  ```bash
-  opencode auth login -p "github-copilot"
-  ```
+**3. Configure API providers**
 
-3. **Configure API Providers**
+```bash
+mkdir -p ~/.config/opencode
+cp configs/openrouter.env ~/.config/opencode/.env
+# Edit the file and add your GOOGLE_API_KEY and/or OPENROUTER_API_KEY
+```
 
-  Copy the environment template and add your API keys for Google and OpenRouter:
+**4. Apply base configuration**
 
-  ```bash
-  mkdir -p ~/.config/opencode
-  cp configs/openrouter.env ~/.config/opencode/.env
-  ```
+```bash
+mkdir -p ~/.config/opencode
+cp configs/opencode.json ~/.config/opencode/opencode.json
+```
 
-4. **Apply Configurations**
+> **Note:** The automated `setup.sh` performs additional steps that manual configuration does not: JSON schema validation, corrupted-config recovery, MCP `type`/`enabled` field enforcement, and oh-my-openagent plugin registration. Manual setup requires careful JSON validation.
 
-  Copy the baseline configurations to your system:
+**5. Install optional tools**
 
-  ```bash
-  mkdir -p ~/.config/opencode
-  cp configs/opencode.json ~/.config/opencode/opencode.json
-  
-  # If using backend MCPs, also copy the backend config template
-  cp configs/opencode-backend.json ~/.config/opencode/opencode-backend.json
-  
-  # If using frontend skills, copy frontend config template
-  cp configs/opencode-frontend.json ~/.config/opencode/opencode-frontend.json
-  ```
+```bash
+npm install -g tokscale repomix
 
-  **Note:** The automated setup.sh performs additional schema validation and merges configurations intelligently. Manual setup requires careful JSON validation.
+# oh-my-openagent (optional)
+npm install -g oh-my-opencode
+cp configs/oh-my-openagent.json ~/.config/opencode/oh-my-openagent.json
+```
 
-5. **Install Tokscale & Repomix**
+**6. Install the @frontend agent (optional, manual only)**
 
-  ```bash
-  npm install -g tokscale repomix
-  ```
-
-6. **Install oh-my-openagent (Optional)**
-
-  ```bash
-  npm install -g oh-my-opencode
-  mkdir -p ~/.config/opencode
-  cp configs/oh-my-openagent/.openagentrc ~/.config/opencode/oh-my-openagent.rc
-  ```
+```bash
+mkdir -p ~/.config/opencode/agents
+cp configs/agents/frontend.md ~/.config/opencode/agents/frontend.md
+```
 
 ---
 
 ## Architecture & Strategy
 
-Our setup is designed for efficiency and minimal overhead:
-
-- **Cost Optimization**: By leveraging the Copilot Student Pack alongside OpenRouter's free tier, the environment remains highly cost-effective.
-- **Intelligent Routing**: Use OpenRouter for bleeding-edge experimental models, Copilot for standard IDE inline completions, and Google Pro for tasks requiring vast context windows.
-- **Seamless Authentication**: The authentication plugin runs silently in the background, ensuring tokens stay fresh without manual intervention.
-- **Usage Tracking**: `tokscale` provides an immediate dashboard to visualize token burn across your entire stack.
+- **Cost Optimization** — The Copilot Student Pack combined with OpenRouter's free tier keeps the environment highly cost-effective.
+- **Intelligent Routing** — OpenRouter for bleeding-edge/experimental models, Copilot for standard IDE completions, Google Gemini for massive context windows.
+- **Schema Compliance** — The config finalization step (Step 4d) runs after all modules are installed. It enforces the opencode JSON schema on every MCP entry (`type`, `enabled`), recovers from corrupted config files, and registers oh-my-openagent as a plugin with its default MCP tools (`search`, `fetch`). Fallback MCP definitions are used automatically if `configs/opencode-backend.json` is absent.
+- **Usage Tracking** — `tokscale` provides an immediate dashboard to visualize token burn across the entire stack.
 
 ---
 
@@ -233,4 +255,4 @@ Our setup is designed for efficiency and minimal overhead:
 
 This project is licensed under the **MIT License**. You are free to use, modify, and distribute this stack.
 
-Pull requests are actively welcomed! If you have discovered a more efficient workflow or a better configuration script, please contribute.
+Pull requests are actively welcomed. If you have a more efficient workflow or a better configuration, please contribute.
