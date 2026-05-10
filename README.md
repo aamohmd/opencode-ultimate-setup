@@ -58,7 +58,6 @@ The stack is highly modular. The setup script will intelligently configure only 
 * <a href="https://github.com/yamadashy/repomix"><img src="https://img.shields.io/badge/repomix-Context_Packer-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/yamadashy/repomix?style=for-the-badge&color=yellow" height="22">
   Packs an entire repository into a single AI-readable file. Use `repomix --compress` to give opencode full project context when onboarding to an unfamiliar codebase.
 
-
 ### Default System Prompts
 
 The core configuration includes custom system instructions based on **Andrej Karpathy's LLM coding guidelines**:
@@ -169,7 +168,7 @@ Examples:
 |---------|----------------|
 | **Minimal** | Core engine (`opencode-ai`) only |
 | **Backend Dev** | Core + Backend MCPs (4, each optional) + 6 backend skills + `@backend` agent |
-| **Full Stack** | Backend Dev + 4 design skills + tokscale + repomix |
+| **Full Stack** | Backend Dev + Frontend Pack (4 design skills + `@frontend` agent) + tokscale + repomix |
 | **Everything** | Full Stack + Playwright + Chromium + oh-my-openagent |
 | **Custom** | Pick each component individually |
 

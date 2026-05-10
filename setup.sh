@@ -232,7 +232,7 @@ profile_includes() {
   case "$PROFILE" in
     minimal)    return 1 ;;
     backend)    case "$feature" in backend) return 0 ;; esac; return 1 ;;
-    fullstack)  case "$feature" in backend|frontend|tokscale|oma|repomix) return 0 ;; esac; return 1 ;;
+    fullstack)  case "$feature" in backend|frontend|tokscale|repomix) return 0 ;; esac; return 1 ;;
     everything) return 0 ;;
     *)          return 1 ;;
   esac
@@ -507,7 +507,8 @@ if _want_frontend; then
   if npm_installed playwright; then
     already "  Playwright"
     mark_installed "Playwright"
-  elif prompt_yes_no "  Playwright? (browser automation + Chromium)" "N"; then
+  elif { profile_includes "playwright" || [ "$PROFILE" = "custom" ]; } \
+       && prompt_yes_no "  Playwright? (browser automation + Chromium)" "N"; then
     set +e
     spinner_task "Installing Playwright" npm install -g playwright
     if [ "$OS_TYPE" = "linux" ] || [ "$OS_TYPE" = "wsl" ]; then
@@ -665,7 +666,7 @@ const readJson = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } c
 const servers = (readJson(backendPath) || {}).mcp || {};
 
 const fallbacks = {
-  docker: { type: "local", command: "npx", args: ["-y", "@modelcontextprotocol/server-docker"], enabled: true },
+  docker: { type: "local", command: "npx", args: ["-y", "mcp-server-docker"], enabled: true },
   sentry: { type: "local", command: "npx", args: ["-y", "@modelcontextprotocol/server-sentry"], enabled: true },
   context7: { type: "remote", url: "https://mcp.context7.com/mcp", enabled: true },
   stripe: { type: "local", command: "npx", args: ["-y", "@stripe/mcp"], enabled: true }

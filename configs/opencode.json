@@ -1,8 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": ["oh-my-openagent"],
-  "model": "github-copilot/gpt-5.2",
-  "small_model": "openrouter/qwen/qwen3-coder:free",
   "instructions": [
     "Think Before Coding: State assumptions explicitly. Present multiple interpretations instead of picking silently. Push back when warranted. Stop and ask if confused.",
     "Simplicity First: Write the minimum code that solves the problem. No speculative features, abstractions, or error handling for impossible scenarios.",
@@ -15,43 +13,8 @@
       "npm": "@openrouter/ai-sdk-provider"
     },
     "google": {
-      "npm": "@ai-sdk/google",
-      "models": {
-        "antigravity-claude-sonnet-4-6": {
-          "name": "Claude Sonnet 4.6 (Antigravity)",
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
-        },
-        "antigravity-claude-opus-4-6-thinking": {
-          "name": "Claude Opus 4.6 Thinking (Antigravity)",
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
-          "variants": {
-            "low": { "thinkingConfig": { "thinkingBudget": 8192 } },
-            "max": { "thinkingConfig": { "thinkingBudget": 32768 } }
-          }
-        },
-        "antigravity-gemini-3-pro": {
-          "name": "Gemini 3 Pro (Antigravity)",
-          "limit": { "context": 1048576, "output": 65535 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
-          "variants": {
-            "low": { "thinkingLevel": "low" },
-            "high": { "thinkingLevel": "high" }
-          }
-        },
-        "antigravity-gemini-3-flash": {
-          "name": "Gemini 3 Flash (Antigravity)",
-          "limit": { "context": 1048576, "output": 65536 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
-          "variants": {
-            "minimal": { "thinkingLevel": "minimal" },
-            "low": { "thinkingLevel": "low" },
-            "medium": { "thinkingLevel": "medium" },
-            "high": { "thinkingLevel": "high" }
-          }
-        }
-      }
+      "npm": "@ai-sdk/google"
+    }
   },
   "mcp": {
     "context7": {
