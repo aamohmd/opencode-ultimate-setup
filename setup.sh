@@ -385,9 +385,9 @@ if [ -f "${SCRIPT_DIR}/configs/oh-my-openagent.json" ] \
 fi
 
 # =============================================================================
-# STEP 4 -- Backend module Configuration
+# STEP 4 -- Backend Pack
 # =============================================================================
-section "Backend Module" 4 6
+section "Backend Pack" 4 6
 
 MCP_DOCKER=false
 MCP_SENTRY=false
@@ -399,7 +399,7 @@ _want_backend() {
   profile_includes "backend"  && return 0
   any_backend_configured      && return 0
   [ -n "$PROFILE" ] && [ "$PROFILE" != "custom" ] && return 1
-  prompt_yes_no "Install Backend Module? (MCPs + skills + @backend agent)"
+  prompt_yes_no "Install Backend Pack? (MCPs + skills + @backend agent)"
 }
 
 if _want_backend; then
@@ -486,9 +486,9 @@ if _want_backend; then
       warn "configs/agents/backend.md not found. Skipped."
     fi
   fi
-  mark_installed "Backend Module"
+  mark_installed "Backend Pack"
 else
-  mark_skipped "Backend Module"
+  mark_skipped "Backend Pack"
 fi
 
 # =============================================================================
@@ -540,6 +540,24 @@ if _want_frontend; then
       && mark_installed "Frontend Skills (${count})" \
       || already "  Frontend skills"
   fi
+
+  if [ -f "${OPENCODE_CONFIG_DIR}/agents/frontend.md" ]; then
+    already "  @frontend agent"
+    mark_installed "@frontend agent"
+  elif prompt_yes_no "  Install @frontend agent? (use @frontend in opencode)"; then
+    if [ -f "${SCRIPT_DIR}/configs/agents/frontend.md" ]; then
+      mkdir -p "${OPENCODE_CONFIG_DIR}/agents"
+      if [ "$DRY_RUN" = false ]; then
+        cp "${SCRIPT_DIR}/configs/agents/frontend.md" \
+           "${OPENCODE_CONFIG_DIR}/agents/frontend.md"
+      fi
+      success "  @frontend agent installed"
+      mark_installed "@frontend agent"
+    else
+      warn "configs/agents/frontend.md not found. Skipped."
+    fi
+  fi
+
   mark_installed "Frontend Pack"
 else
   mark_skipped "Frontend Pack"

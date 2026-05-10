@@ -58,18 +58,6 @@ The stack is highly modular. The setup script will intelligently configure only 
 * <a href="https://github.com/yamadashy/repomix"><img src="https://img.shields.io/badge/repomix-Context_Packer-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/yamadashy/repomix?style=for-the-badge&color=yellow" height="22">
   Packs an entire repository into a single AI-readable file. Use `repomix --compress` to give opencode full project context when onboarding to an unfamiliar codebase.
 
-### Frontend Pack (Optional)
-
-Included in the **Full Stack** and **Everything** profiles:
-
-**Tools:**
-- **Playwright + Chromium** — Browser automation for testing/browsing (**Everything** profile only; prompted during Custom install)
-
-**Design Skills** *(stored locally, compatible with opencode, Claude Code, Codex)*:
-- **impeccable** — Design implementation with 20+ commands (craft, shape, audit, polish, animate, etc.)
-- **frontend-design** — Production-grade frontend with anti-AI-slop guidelines
-- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export
-- **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY)
 
 ### Default System Prompts
 
@@ -111,7 +99,23 @@ Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
 **Agents:**
 
 - `@backend` — Senior backend engineer with database expertise, all 6 skills, and optional MCP access. Auto-installed when the Backend Pack is selected.
-- `@frontend` — Senior frontend engineer with UI/UX expertise and design skills. Available at `configs/agents/frontend.md`; must be copied manually.
+
+### Frontend Pack (Optional)
+
+Included in the **Full Stack** and **Everything** profiles:
+
+**Tools:**
+- **Playwright + Chromium** — Browser automation for testing/browsing (**Everything** profile only; prompted during Custom install)
+
+**Design Skills** *(stored locally, compatible with opencode, Claude Code, Codex)*:
+- **impeccable** — Design implementation with 20+ commands (craft, shape, audit, polish, animate, etc.)
+- **frontend-design** — Production-grade frontend with anti-AI-slop guidelines
+- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export
+- **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY)
+
+**Agents:**
+
+- `@frontend` — Senior frontend engineer with UI/UX expertise and design skills. Auto-installed when the Frontend Pack is selected.
 
 ---
 
@@ -233,10 +237,11 @@ npm install -g oh-my-opencode
 cp configs/oh-my-openagent.json ~/.config/opencode/oh-my-openagent.json
 ```
 
-**6. Install the @frontend agent (optional, manual only)**
+**6. Install agents (optional)**
 
 ```bash
 mkdir -p ~/.config/opencode/agents
+cp configs/agents/backend.md ~/.config/opencode/agents/backend.md
 cp configs/agents/frontend.md ~/.config/opencode/agents/frontend.md
 ```
 
