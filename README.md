@@ -116,6 +116,38 @@ Included in the **Full Stack** and **Everything** profiles:
 
 - `@frontend` — Senior frontend engineer with UI/UX expertise and design skills. Auto-installed when the Frontend Pack is selected.
 
+### Landing Page Pack (Optional)
+
+Included in the **Everything** profile; prompted during **Custom** install:
+
+**Skills** *(8 official modules from [greensock/gsap-skills](https://github.com/greensock/gsap-skills))*:
+
+| Skill | Covers |
+|-------|--------|
+| gsap-core | `gsap.to()`, `from()`, `fromTo()`, easing, stagger, `matchMedia()` |
+| gsap-timeline | `gsap.timeline()`, position parameter, nesting, playback |
+| gsap-scrolltrigger | Scroll-linked animations, pinning, scrub, triggers |
+| gsap-plugins | SplitText, Flip, Draggable, ScrollSmoother, Observer, SVG, physics |
+| gsap-react | `useGSAP` hook, refs, `gsap.context()`, cleanup |
+| gsap-frameworks | Vue, Svelte, Nuxt, SvelteKit lifecycle & scoping |
+| gsap-performance | Transform-only animation, will-change, batching, 60fps |
+| gsap-utils | `clamp`, `mapRange`, `snap`, `toArray`, `wrap`, `pipe` |
+
+**MCP Servers:**
+
+| Server   | Package / Endpoint                  | Purpose                                          |
+|----------|-------------------------------------|--------------------------------------------------|
+| 21st Dev | `@21st-dev/magic` (npm, API key)    | Premium pre-built React component catalog        |
+
+**Agents:**
+
+- `@studio` — Studio-grade landing page architect with anti-AI-slop design principles, scroll pattern vocabulary, and full toolchain awareness (GSAP, Motion, Lenis, 21st Dev, Nano Banana).
+
+**Companion tools** *(not auto-installed, documented for reference)*:
+- [Nano Banana](https://github.com/gemini-cli-extensions/nanobanana) — Gemini CLI extension for AI image generation (install via `gemini extensions install`)
+- [Motion](https://www.npmjs.com/package/motion) (formerly Framer Motion) — React animation runtime (`npm install motion`)
+- [Lenis](https://www.npmjs.com/package/lenis) — Smooth scroll library (`npm install lenis`)
+
 ---
 
 ## Prerequisites
@@ -169,7 +201,7 @@ Examples:
 | **Minimal** | Core engine (`opencode-ai`) only |
 | **Backend Dev** | Core + Backend MCPs (4, each optional) + 6 backend skills + `@backend` agent |
 | **Full Stack** | Backend Dev + Frontend Pack (4 design skills + `@frontend` agent) + tokscale + repomix |
-| **Everything** | Full Stack + Playwright + Chromium + oh-my-openagent |
+| **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + Playwright + Chromium + oh-my-openagent |
 | **Custom** | Pick each component individually |
 
 ### Re-running the Installer
@@ -242,6 +274,7 @@ cp configs/oh-my-openagent.json ~/.config/opencode/oh-my-openagent.json
 mkdir -p ~/.config/opencode/agents
 cp configs/agents/backend.md ~/.config/opencode/agents/backend.md
 cp configs/agents/frontend.md ~/.config/opencode/agents/frontend.md
+cp configs/agents/studio.md ~/.config/opencode/agents/studio.md   # Landing Page Pack
 ```
 
 ---

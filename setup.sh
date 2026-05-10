@@ -565,7 +565,86 @@ else
 fi
 
 # =============================================================================
-# STEP 4c -- Optional tools
+# STEP 4c -- Landing Page Pack
+# =============================================================================
+printf "\n  ${BLUE}${BOLD}-- Landing Page Pack${RESET}\n\n"
+
+MCP_21ST_DEV=false
+_21ST_DEV_KEY=""
+
+_want_landing() {
+  profile_includes "landing"  && return 0
+  [ -n "$PROFILE" ] && [ "$PROFILE" != "custom" ] && return 1
+  prompt_yes_no "Install Landing Page Pack? (GSAP skills + 21st Dev MCP + @studio agent)"
+}
+
+if _want_landing; then
+
+  # GSAP skills (official greensock/gsap-skills)
+  GSAP_SRC="${SCRIPT_DIR}/configs/skills/gsap"
+  GSAP_DST="${OPENCODE_CONFIG_DIR}/skills"
+  if [ -d "${GSAP_DST}/gsap-core" ]; then
+    already "  GSAP skills (8 modules)"
+    mark_installed "GSAP Skills"
+  elif [ -d "$GSAP_SRC" ]; then
+    mkdir -p "$GSAP_DST"
+    _gsap_count=0
+    if [ "$DRY_RUN" = false ]; then
+      for skill_dir in "${GSAP_SRC}"/gsap-*/; do
+        name=$(basename "$skill_dir")
+        mkdir -p "${GSAP_DST}/${name}"
+        cp -r "${skill_dir}"* "${GSAP_DST}/${name}/"
+        _gsap_count=$((_gsap_count + 1))
+      done
+      # Copy the llms.txt index if present
+      [ -f "${GSAP_SRC}/llms.txt" ] && cp "${GSAP_SRC}/llms.txt" "${GSAP_DST}/llms-gsap.txt"
+    fi
+    success "  GSAP skills installed (${_gsap_count} modules)"
+    mark_installed "GSAP Skills"
+  else
+    warn "configs/skills/gsap not found. Skipped."
+  fi
+
+  # 21st Dev MCP
+  if mcp_configured "21st-dev"; then
+    already "  21st Dev MCP"
+    mark_installed "21st Dev MCP"
+    MCP_21ST_DEV=true
+  elif prompt_yes_no "  21st Dev MCP? (premium React component catalog — requires API key from 21st.dev)"; then
+    MCP_21ST_DEV=true
+    _21ST_DEV_KEY=$(prompt_secret "  21st Dev API key (or press Enter to skip):")
+    _21ST_DEV_KEY=$(printf '%s' "$_21ST_DEV_KEY" | head -1 | tr -d '\r\n ')
+    if [ -z "$_21ST_DEV_KEY" ]; then
+      detail "No key entered -- MCP registered but disabled until you add your key."
+    fi
+    mark_installed "21st Dev MCP"
+  fi
+
+  # @studio agent
+  if [ -f "${OPENCODE_CONFIG_DIR}/agents/studio.md" ]; then
+    already "  @studio agent"
+    mark_installed "@studio agent"
+  elif prompt_yes_no "  Install @studio agent? (use @studio for landing pages in opencode)"; then
+    if [ -f "${SCRIPT_DIR}/configs/agents/studio.md" ]; then
+      mkdir -p "${OPENCODE_CONFIG_DIR}/agents"
+      if [ "$DRY_RUN" = false ]; then
+        cp "${SCRIPT_DIR}/configs/agents/studio.md" \
+           "${OPENCODE_CONFIG_DIR}/agents/studio.md"
+      fi
+      success "  @studio agent installed"
+      mark_installed "@studio agent"
+    else
+      warn "configs/agents/studio.md not found. Skipped."
+    fi
+  fi
+
+  mark_installed "Landing Page Pack"
+else
+  mark_skipped "Landing Page Pack"
+fi
+
+# =============================================================================
+# STEP 4d -- Optional tools
 # =============================================================================
 printf "\n  ${BLUE}${BOLD}-- Optional Tools${RESET}\n\n"
 
@@ -606,7 +685,7 @@ else
 fi
 
 # =============================================================================
-# STEP 4d -- Finalize Configuration Build
+# STEP 4e -- Finalize Configuration Build
 # =============================================================================
 # This runs unconditionally at the end to ensure schema compliance.
 if [ "$DRY_RUN" = false ]; then
@@ -615,6 +694,8 @@ if [ "$DRY_RUN" = false ]; then
   MCP_SENTRY="$MCP_SENTRY"             \
   MCP_STRIPE="$MCP_STRIPE"             \
   MCP_CONTEXT7="$MCP_CONTEXT7"         \
+  MCP_21ST_DEV="$MCP_21ST_DEV"         \
+  _21ST_DEV_KEY="${_21ST_DEV_KEY:-}"   \
   STRIPE_KEY="${STRIPE_KEY:-}"         \
   OMA_INSTALLED="${OMA_INSTALLED}"     \
   OC_SCRIPT_DIR="$SCRIPT_DIR"          \
@@ -622,6 +703,7 @@ if [ "$DRY_RUN" = false ]; then
   node - > "$_mcp_tmp" <<'NODE'
 const fs   = require('fs');
 const path = require('path');
+const frontendPath = path.join(process.env.OC_SCRIPT_DIR, 'configs', 'opencode-frontend.json');
 const backendPath  = path.join(process.env.OC_SCRIPT_DIR, 'configs', 'opencode-backend.json');
 const opencodePath = path.join(process.env.OC_CONFIG_DIR, 'opencode.json');
 const configDir    = process.env.OC_CONFIG_DIR;
@@ -664,6 +746,7 @@ Object.keys(d.mcp).forEach(k => {
 
 const readJson = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 const servers = (readJson(backendPath) || {}).mcp || {};
+const frontendServers = (readJson(frontendPath) || {}).mcp || {};
 
 const fallbacks = {
   docker: { type: "local", command: "npx", args: ["-y", "mcp-server-docker"], enabled: true },
@@ -693,6 +776,17 @@ if (isTrue(process.env.MCP_STRIPE))   copyServer('stripe', s => {
   s.environment = s.environment || {};
   if (process.env.STRIPE_KEY) s.environment.STRIPE_SECRET_KEY = process.env.STRIPE_KEY;
 });
+
+// 4. Append Landing Page Pack MCP
+if (isTrue(process.env.MCP_21ST_DEV)) {
+  const base = frontendServers['21st-dev'] || { type: 'local', command: 'npx', args: ['-y', '@21st-dev/magic@latest'], enabled: true };
+  const srv = JSON.parse(JSON.stringify(base));
+  if (!srv.type) srv.type = 'local';
+  srv.enabled = true;
+  srv.environment = srv.environment || {};
+  if (process.env._21ST_DEV_KEY) srv.environment.API_KEY_21ST_DEV = process.env._21ST_DEV_KEY;
+  d.mcp['21st-dev'] = srv;
+}
 
 fs.mkdirSync(configDir, { recursive: true });
 fs.writeFileSync(opencodePath, JSON.stringify(d, null, 2));

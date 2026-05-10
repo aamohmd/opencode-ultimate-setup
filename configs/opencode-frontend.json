@@ -1,5 +1,12 @@
 {
   "mcp": {
+    "21st-dev": {
+      "enabled": true,
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@21st-dev/magic@latest"],
+      "environment": { "API_KEY_21ST_DEV": "" }
+    },
     "figma": {
       "enabled": false,
       "type": "local",
