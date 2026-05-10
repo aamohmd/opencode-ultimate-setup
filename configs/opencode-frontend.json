@@ -6,26 +6,6 @@
       "command": "npx",
       "args": ["-y", "@21st-dev/magic@latest"],
       "environment": { "API_KEY_21ST_DEV": "" }
-    },
-    "figma": {
-      "enabled": false,
-      "type": "local",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-figma"],
-      "environment": { "FIGMA_ACCESS_TOKEN": "figd_..." }
-    },
-    "puppeteer": {
-      "enabled": false,
-      "type": "local",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
-    },
-    "vercel": {
-      "enabled": false,
-      "type": "local",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-vercel"],
-      "environment": { "VERCEL_ACCESS_TOKEN": "..." }
     }
   }
 }

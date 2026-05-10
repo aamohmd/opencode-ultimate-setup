@@ -542,6 +542,30 @@ if _want_frontend; then
       || already "  Frontend skills"
   fi
 
+  # ui-ux-pro-max skill (76k★ design intelligence -- installed via its own CLI)
+  if [ -d "${OPENCODE_CONFIG_DIR}/skills/ui-ux-pro-max" ]; then
+    already "  ui-ux-pro-max skill"
+    mark_installed "ui-ux-pro-max"
+  elif command -v python3 >/dev/null 2>&1 \
+       && prompt_yes_no "  ui-ux-pro-max? (design intelligence: 67 styles, 161 palettes, 57 font pairings)"; then
+    if [ "$DRY_RUN" = false ]; then
+      set +e
+      _uipro_tmp=$(mktemp -d)
+      (cd "$_uipro_tmp" && npx -y uipro-cli@latest init --ai opencode >/dev/null 2>&1)
+      if [ -d "${_uipro_tmp}/.opencode/skills/ui-ux-pro-max" ]; then
+        mkdir -p "${OPENCODE_CONFIG_DIR}/skills"
+        cp -r "${_uipro_tmp}/.opencode/skills/ui-ux-pro-max" \
+              "${OPENCODE_CONFIG_DIR}/skills/ui-ux-pro-max"
+        success "  ui-ux-pro-max skill installed"
+      else
+        warn "ui-ux-pro-max install failed. Run manually: npx uipro-cli@latest init --ai opencode"
+      fi
+      rm -rf "$_uipro_tmp"
+      set -e
+    fi
+    mark_installed "ui-ux-pro-max"
+  fi
+
   if [ -f "${OPENCODE_CONFIG_DIR}/agents/frontend.md" ]; then
     already "  @frontend agent"
     mark_installed "@frontend agent"
@@ -644,7 +668,124 @@ else
 fi
 
 # =============================================================================
-# STEP 4d -- Optional tools
+# STEP 4d -- AI Engineering Pack
+# =============================================================================
+printf "\n  ${BLUE}${BOLD}-- AI Engineering Pack${RESET}\n\n"
+
+MCP_HUGGINGFACE=false
+MCP_LANGSMITH=false
+MCP_WANDB=false
+MCP_PINECONE=false
+_PINECONE_KEY=""
+_WANDB_KEY=""
+
+_want_ai() {
+  profile_includes "ai-engineering" && return 0
+  [ -n "$PROFILE" ] && [ "$PROFILE" != "custom" ] && return 1
+  prompt_yes_no "Install AI Engineering Pack? (Model Evaluation, HuggingFace, RAG tools + @ai-engineer)"
+}
+
+if _want_ai; then
+
+  # AI Engineering Skills
+  AI_SRC="${SCRIPT_DIR}/configs/skills/ai-engineering"
+  AI_DST="${OPENCODE_CONFIG_DIR}/skills/ai-engineering"
+  if [ -d "${AI_DST}/ml-pipeline-creation" ]; then
+    already "  AI Engineering skills (12 modules)"
+    mark_installed "AI Engineering Skills"
+  elif [ -d "$AI_SRC" ]; then
+    mkdir -p "$AI_DST"
+    _ai_count=0
+    if [ "$DRY_RUN" = false ]; then
+      for skill_dir in "${AI_SRC}"/*/; do
+        [ -d "$skill_dir" ] || continue
+        name=$(basename "$skill_dir")
+        mkdir -p "${AI_DST}/${name}"
+        cp -r "${skill_dir}"* "${AI_DST}/${name}/"
+        _ai_count=$((_ai_count + 1))
+      done
+    fi
+    success "  AI Engineering skills installed (${_ai_count} modules)"
+    mark_installed "AI Engineering Skills"
+  else
+    warn "configs/skills/ai-engineering not found. Skipped."
+  fi
+
+  # HuggingFace MCP
+  if mcp_configured "huggingface"; then
+    already "  HuggingFace MCP"
+    mark_installed "HuggingFace MCP"
+    MCP_HUGGINGFACE=true
+  elif prompt_yes_no "  HuggingFace MCP? (Direct access to HF Hub APIs and Models)"; then
+    MCP_HUGGINGFACE=true
+    mark_installed "HuggingFace MCP"
+  fi
+
+  # LangSmith MCP
+  if mcp_configured "langsmith"; then
+    already "  LangSmith MCP"
+    mark_installed "LangSmith MCP"
+    MCP_LANGSMITH=true
+  elif prompt_yes_no "  LangSmith MCP? (Observability and tracing for LLMs)"; then
+    MCP_LANGSMITH=true
+    mark_installed "LangSmith MCP"
+  fi
+
+  # W&B MCP
+  if mcp_configured "wandb"; then
+    already "  Weights & Biases MCP"
+    mark_installed "W&B MCP"
+    MCP_WANDB=true
+  elif prompt_yes_no "  Weights & Biases MCP? (LLM traces and experiment metrics - requires API key)"; then
+    MCP_WANDB=true
+    _WANDB_KEY=$(prompt_secret "  W&B API key (or press Enter to skip):")
+    _WANDB_KEY=$(printf '%s' "$_WANDB_KEY" | head -1 | tr -d '\r\n ')
+    if [ -z "$_WANDB_KEY" ]; then
+      detail "No key entered -- MCP registered but won't work without a key."
+    fi
+    mark_installed "W&B MCP"
+  fi
+
+  # Pinecone MCP
+  if mcp_configured "pinecone"; then
+    already "  Pinecone MCP"
+    mark_installed "Pinecone MCP"
+    MCP_PINECONE=true
+  elif prompt_yes_no "  Pinecone MCP? (Vector database tools - requires API key)"; then
+    MCP_PINECONE=true
+    _PINECONE_KEY=$(prompt_secret "  Pinecone API key (or press Enter to skip):")
+    _PINECONE_KEY=$(printf '%s' "$_PINECONE_KEY" | head -1 | tr -d '\r\n ')
+    if [ -z "$_PINECONE_KEY" ]; then
+      detail "No key entered -- MCP registered but won't work without a key."
+    fi
+    mark_installed "Pinecone MCP"
+  fi
+
+  # @ai-engineer agent
+  if [ -f "${OPENCODE_CONFIG_DIR}/agents/ai-engineer.md" ]; then
+    already "  @ai-engineer agent"
+    mark_installed "@ai-engineer agent"
+  elif prompt_yes_no "  Install @ai-engineer agent? (use @ai-engineer for RAG & ML in opencode)"; then
+    if [ -f "${SCRIPT_DIR}/configs/agents/ai-engineer.md" ]; then
+      mkdir -p "${OPENCODE_CONFIG_DIR}/agents"
+      if [ "$DRY_RUN" = false ]; then
+        cp "${SCRIPT_DIR}/configs/agents/ai-engineer.md" \
+           "${OPENCODE_CONFIG_DIR}/agents/ai-engineer.md"
+      fi
+      success "  @ai-engineer agent installed"
+      mark_installed "@ai-engineer agent"
+    else
+      warn "configs/agents/ai-engineer.md not found. Skipped."
+    fi
+  fi
+
+  mark_installed "AI Engineering Pack"
+else
+  mark_skipped "AI Engineering Pack"
+fi
+
+# =============================================================================
+# STEP 4e -- Optional tools
 # =============================================================================
 printf "\n  ${BLUE}${BOLD}-- Optional Tools${RESET}\n\n"
 
@@ -685,7 +826,7 @@ else
 fi
 
 # =============================================================================
-# STEP 4e -- Finalize Configuration Build
+# STEP 4f -- Finalize Configuration Build
 # =============================================================================
 # This runs unconditionally at the end to ensure schema compliance.
 if [ "$DRY_RUN" = false ]; then
@@ -696,6 +837,12 @@ if [ "$DRY_RUN" = false ]; then
   MCP_CONTEXT7="$MCP_CONTEXT7"         \
   MCP_21ST_DEV="$MCP_21ST_DEV"         \
   _21ST_DEV_KEY="${_21ST_DEV_KEY:-}"   \
+  MCP_HUGGINGFACE="$MCP_HUGGINGFACE"   \
+  MCP_LANGSMITH="$MCP_LANGSMITH"       \
+  MCP_WANDB="$MCP_WANDB"               \
+  MCP_PINECONE="$MCP_PINECONE"         \
+  _PINECONE_KEY="${_PINECONE_KEY:-}"   \
+  _WANDB_KEY="${_WANDB_KEY:-}"         \
   STRIPE_KEY="${STRIPE_KEY:-}"         \
   OMA_INSTALLED="${OMA_INSTALLED}"     \
   OC_SCRIPT_DIR="$SCRIPT_DIR"          \
@@ -786,6 +933,24 @@ if (isTrue(process.env.MCP_21ST_DEV)) {
   srv.environment = srv.environment || {};
   if (process.env._21ST_DEV_KEY) srv.environment.API_KEY_21ST_DEV = process.env._21ST_DEV_KEY;
   d.mcp['21st-dev'] = srv;
+}
+
+// 5. Append AI Engineering MCPs
+if (isTrue(process.env.MCP_HUGGINGFACE)) {
+  d.mcp['huggingface'] = { type: 'remote', url: 'https://huggingface.co/mcp', enabled: true };
+}
+if (isTrue(process.env.MCP_LANGSMITH)) {
+  d.mcp['langsmith'] = { type: 'remote', url: 'https://api.smith.langchain.com/mcp', enabled: true };
+}
+if (isTrue(process.env.MCP_WANDB)) {
+  const srv = { type: 'remote', url: 'https://mcp.withwandb.com', enabled: true, environment: {} };
+  if (process.env._WANDB_KEY) srv.environment.WANDB_API_KEY = process.env._WANDB_KEY;
+  d.mcp['wandb'] = srv;
+}
+if (isTrue(process.env.MCP_PINECONE)) {
+  const srv = { type: 'local', command: 'npx', args: ['-y', '@pinecone-database/mcp'], enabled: true, environment: {} };
+  if (process.env._PINECONE_KEY) srv.environment.PINECONE_API_KEY = process.env._PINECONE_KEY;
+  d.mcp['pinecone'] = srv;
 }
 
 fs.mkdirSync(configDir, { recursive: true });

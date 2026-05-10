@@ -111,6 +111,7 @@ Included in the **Full Stack** and **Everything** profiles:
 - **frontend-design** — Production-grade frontend with anti-AI-slop guidelines
 - **huashu-design** — Chinese design system with HTML prototypes, slides, animation export
 - **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY)
+- **[ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)** — Design intelligence engine: 67 styles, 161 color palettes, 57 font pairings, 99 UX guidelines, design system generator (requires Python 3)
 
 **Agents:**
 
@@ -147,6 +148,31 @@ Included in the **Everything** profile; prompted during **Custom** install:
 - [Nano Banana](https://github.com/gemini-cli-extensions/nanobanana) — Gemini CLI extension for AI image generation (install via `gemini extensions install`)
 - [Motion](https://www.npmjs.com/package/motion) (formerly Framer Motion) — React animation runtime (`npm install motion`)
 - [Lenis](https://www.npmjs.com/package/lenis) — Smooth scroll library (`npm install lenis`)
+
+### AI Engineering Pack (Optional)
+
+Included in the **Everything** profile; prompted during **Custom** install:
+
+**Skills** *(12 cherry-picked modules from [awesome-ai-agent-skills](https://github.com/seb1n/awesome-ai-agent-skills))*:
+
+Includes `ml-pipeline-creation`, `model-deployment`, `hyperparameter-tuning`, `deep-research`, `context-optimization`, `data-analysis`, and 6 more specialized skills for ML Ops and Context Engineering.
+
+**MCP Servers:**
+
+| Server        | Package / Endpoint                     | Purpose                                          |
+|---------------|----------------------------------------|--------------------------------------------------|
+| HuggingFace   | `https://huggingface.co/mcp`           | Direct access to HF Hub APIs and Models          |
+| LangSmith     | `https://api.smith.langchain.com/mcp`  | Observability and tracing for LLMs               |
+| W&B           | `https://mcp.withwandb.com`            | LLM traces and experiment metrics (API key)      |
+| Pinecone      | `@pinecone-database/mcp` (npm)         | Vector database tools (API key)                  |
+
+**Agents:**
+
+- `@ai-engineer` — AI Engineering architect specializing in RAG pipelines, model evaluation, prompt engineering, and ML Ops.
+
+**Companion tools** *(not auto-installed, documented for reference)*:
+- [mcpbr](https://github.com/mcp-universe/mcpbr) — MCP Benchmark Runner (`npx mcpbr-cli run`)
+- [DeepEval](https://github.com/confident-ai/deepeval) — LLM Evaluation Framework
 
 ---
 
@@ -200,8 +226,8 @@ Examples:
 |---------|----------------|
 | **Minimal** | Core engine (`opencode-ai`) only |
 | **Backend Dev** | Core + Backend MCPs (4, each optional) + 6 backend skills + `@backend` agent |
-| **Full Stack** | Backend Dev + Frontend Pack (4 design skills + `@frontend` agent) + tokscale + repomix |
-| **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + Playwright + Chromium + oh-my-openagent |
+| **Full Stack** | Backend Dev + Frontend Pack (5 design skills + `@frontend` agent) + tokscale + repomix |
+| **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + AI Engineering Pack (12 skills + 4 MCPs + `@ai-engineer` agent) + Playwright + Chromium + oh-my-openagent |
 | **Custom** | Pick each component individually |
 
 ### Re-running the Installer
