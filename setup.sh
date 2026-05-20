@@ -317,7 +317,7 @@ if [ -z "$PROFILE" ] && [ "$NON_INTERACTIVE" = false ]; then
   printf "  ${CYAN}1${RESET}  ${BOLD}Minimal${RESET}      Core engine only\n"
   printf "  ${CYAN}2${RESET}  ${BOLD}Backend Dev${RESET}  Core + Backend MCPs + Skills + Agent\n"
   printf "  ${CYAN}3${RESET}  ${BOLD}Full Stack${RESET}   Backend + Frontend + tokscale + repomix\n"
-  printf "  ${CYAN}4${RESET}  ${BOLD}Everything${RESET}   All of the above + Playwright + oh-my-openagent\n"
+  printf "  ${CYAN}4${RESET}  ${BOLD}Everything${RESET}   All of the above + Mobile + Playwright + oh-my-openagent\n"
   printf "  ${CYAN}5${RESET}  ${BOLD}Custom${RESET}       I'll pick each component myself\n\n"
   printf "  ${CYAN}?${RESET} ${BOLD}Profile${RESET} [1-5, default: 5]: "
   read -r pick </dev/tty
@@ -785,6 +785,113 @@ else
 fi
 
 # =============================================================================
+# STEP 4e-mobile -- Mobile Development Pack
+# =============================================================================
+printf "\n  ${BLUE}${BOLD}-- Mobile Development Pack${RESET}\n\n"
+
+MCP_FLUTTER=false
+MCP_MOBILE_MCP=false
+
+_want_mobile() {
+  profile_includes "mobile"  && return 0
+  [ -n "$PROFILE" ] && [ "$PROFILE" != "custom" ] && return 1
+  prompt_yes_no "Install Mobile Development Pack? (5 skills + @mobile agent + optional MCPs)"
+}
+
+mobile_skills_installed() {
+  local src="${SCRIPT_DIR}/configs/skills/mobile"
+  [ -d "$src" ] || return 1
+  for d in "$src"/*/; do
+    [ -d "${OPENCODE_CONFIG_DIR}/skills/$(basename "$d")" ] && return 0
+  done
+  return 1
+}
+
+if _want_mobile; then
+
+  printf "  ${BOLD}MCPs${RESET}\n"
+
+  # Flutter/Dart MCP (only if dart CLI is available)
+  if mcp_configured flutter; then
+    already "  Flutter/Dart MCP"
+    mark_installed "Flutter/Dart MCP"
+    MCP_FLUTTER=true
+  elif command -v dart >/dev/null 2>&1; then
+    if prompt_yes_no "  Flutter/Dart MCP? (Dart analyzer, widget tree, pub.dev search)"; then
+      MCP_FLUTTER=true
+      mark_installed "Flutter/Dart MCP"
+    fi
+  else
+    detail "  Flutter/Dart MCP skipped (dart CLI not found)"
+  fi
+
+  # Mobile-MCP (cross-platform device automation)
+  if mcp_configured mobile-mcp; then
+    already "  Mobile-MCP"
+    mark_installed "Mobile-MCP"
+    MCP_MOBILE_MCP=true
+  elif prompt_yes_no "  Mobile-MCP? (device automation, accessibility snapshots, UI testing)"; then
+    MCP_MOBILE_MCP=true
+    mark_installed "Mobile-MCP"
+  fi
+
+  printf "\n  ${BOLD}Skills & Agent${RESET}\n"
+
+  # Mobile skills
+  if mobile_skills_installed; then
+    already "  Mobile skills"
+    mark_installed "Mobile Skills"
+  elif prompt_yes_no "  Install curated mobile development skills? (React Native, Flutter, Expo, testing, performance)"; then
+    if [ -d "${SCRIPT_DIR}/configs/skills/mobile" ]; then
+      mkdir -p "${OPENCODE_CONFIG_DIR}/skills"
+      _mobile_count=0
+      if [ "$DRY_RUN" = false ]; then
+        for skill_dir in "${SCRIPT_DIR}/configs/skills/mobile"/*/; do
+          [ -d "$skill_dir" ] || continue
+          name=$(basename "$skill_dir")
+          dest="${OPENCODE_CONFIG_DIR}/skills/${name}"
+          if [ -d "$dest" ]; then
+            detail "  Skill '${name}' already present -- skipped"
+          else
+            mkdir -p "$dest"
+            cp -r "${skill_dir}"* "$dest/" 2>/dev/null || true
+            _mobile_count=$((_mobile_count+1))
+          fi
+        done
+      fi
+      [ "$_mobile_count" -gt 0 ] \
+        && success "  ${_mobile_count} mobile skill(s) installed" \
+        && mark_installed "Mobile Skills (${_mobile_count})" \
+        || already "  Mobile skills"
+    else
+      warn "configs/skills/mobile not found. Skipped."
+    fi
+  fi
+
+  # @mobile agent
+  if [ -f "${OPENCODE_CONFIG_DIR}/agents/mobile.md" ]; then
+    already "  @mobile agent"
+    mark_installed "@mobile agent"
+  elif prompt_yes_no "  Install @mobile agent? (use @mobile in opencode)"; then
+    if [ -f "${SCRIPT_DIR}/configs/agents/mobile.md" ]; then
+      mkdir -p "${OPENCODE_CONFIG_DIR}/agents"
+      if [ "$DRY_RUN" = false ]; then
+        cp "${SCRIPT_DIR}/configs/agents/mobile.md" \
+           "${OPENCODE_CONFIG_DIR}/agents/mobile.md"
+      fi
+      success "  @mobile agent installed"
+      mark_installed "@mobile agent"
+    else
+      warn "configs/agents/mobile.md not found. Skipped."
+    fi
+  fi
+
+  mark_installed "Mobile Pack"
+else
+  mark_skipped "Mobile Pack"
+fi
+
+# =============================================================================
 # STEP 4e -- Optional tools
 # =============================================================================
 printf "\n  ${BLUE}${BOLD}-- Optional Tools${RESET}\n\n"
@@ -844,6 +951,8 @@ if [ "$DRY_RUN" = false ]; then
   _PINECONE_KEY="${_PINECONE_KEY:-}"   \
   _WANDB_KEY="${_WANDB_KEY:-}"         \
   STRIPE_KEY="${STRIPE_KEY:-}"         \
+  MCP_FLUTTER="$MCP_FLUTTER"           \
+  MCP_MOBILE_MCP="$MCP_MOBILE_MCP"     \
   OMA_INSTALLED="${OMA_INSTALLED}"     \
   OC_SCRIPT_DIR="$SCRIPT_DIR"          \
   OC_CONFIG_DIR="$OPENCODE_CONFIG_DIR" \
@@ -951,6 +1060,14 @@ if (isTrue(process.env.MCP_PINECONE)) {
   const srv = { type: 'local', command: 'npx', args: ['-y', '@pinecone-database/mcp'], enabled: true, environment: {} };
   if (process.env._PINECONE_KEY) srv.environment.PINECONE_API_KEY = process.env._PINECONE_KEY;
   d.mcp['pinecone'] = srv;
+}
+
+// 6. Append Mobile Development Pack MCPs
+if (isTrue(process.env.MCP_FLUTTER)) {
+  d.mcp['flutter'] = { type: 'local', command: 'dart', args: ['run', 'dart_mcp_server'], enabled: true };
+}
+if (isTrue(process.env.MCP_MOBILE_MCP)) {
+  d.mcp['mobile-mcp'] = { type: 'local', command: 'npx', args: ['-y', '@mobilenext/mobile-mcp@latest'], enabled: true };
 }
 
 fs.mkdirSync(configDir, { recursive: true });

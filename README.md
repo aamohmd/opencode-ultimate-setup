@@ -86,18 +86,19 @@ Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
 | Stripe   | `@stripe/mcp` (npm)                 | Payment management, customer queries             |
 | Context7 | `mcp.context7.com/mcp` (remote)     | Live framework documentation (add `use context7` to any prompt) |
 
-**Skills** *(6 curated skills for backend architecture)*:
+**Skills** *(7 curated skills for backend architecture)*:
 
-- `senior-backend` — Senior backend engineer patterns and best practices
-- `database-designer` — Database schema design, migrations, query optimization
+- `nodejs-backend-patterns` — Node.js backend architecture and best practices
+- `dotnet-backend-patterns` — .NET backend design and patterns
+- `backend-testing` — Comprehensive backend testing practices
+- `clerk-backend-api` — Clerk API integrations
+- `backend-dev-guidelines` — General backend engineering standards
 - `python-fastapi-development` — FastAPI framework expertise
 - `golang-backend-development` — Go backend development
-- `aws-solution-architect` — AWS cloud architecture patterns
-- `backend-patterns` — Common backend architecture patterns
 
 **Agents:**
 
-- `@backend` — Senior backend engineer with database expertise, all 6 skills, and optional MCP access. Auto-installed when the Backend Pack is selected.
+- `@backend` — Senior backend engineer with database expertise, all 7 skills, and optional MCP access. Auto-installed when the Backend Pack is selected.
 
 ### Frontend Pack (Optional)
 
@@ -109,8 +110,8 @@ Included in the **Full Stack** and **Everything** profiles:
 **Design Skills** *(stored locally, compatible with opencode, Claude Code, Codex)*:
 - **impeccable** — Design implementation with 20+ commands (craft, shape, audit, polish, animate, etc.)
 - **frontend-design** — Production-grade frontend with anti-AI-slop guidelines
-- **huashu-design** — Chinese design system with HTML prototypes, slides, animation export
 - **taste-skill** — High-agency frontend with tunable dials (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY)
+- **imagegen-frontend-web** — Frontend image generation workflows
 - **[ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)** — Design intelligence engine: 67 styles, 161 color palettes, 57 font pairings, 99 UX guidelines, design system generator (requires Python 3)
 
 **Agents:**
@@ -174,6 +175,35 @@ Includes `ml-pipeline-creation`, `model-deployment`, `hyperparameter-tuning`, `d
 - [mcpbr](https://github.com/mcp-universe/mcpbr) — MCP Benchmark Runner (`npx mcpbr-cli run`)
 - [DeepEval](https://github.com/confident-ai/deepeval) — LLM Evaluation Framework
 
+### Mobile Development Pack (Optional)
+
+Included in the **Everything** profile; prompted during **Custom** install:
+
+**Skills** *(5 curated modules for cross-platform mobile development)*:
+
+| Skill | Covers |
+|-------|--------|
+| sleek-design-mobile-apps | Sleek mobile app UI/UX design and architecture |
+| mobile-ios-design | iOS-specific design guidelines and principles |
+| mobile-android-design | Android-specific design guidelines and Material Design |
+| mobile-design | General mobile application design heuristics |
+| mobile-touch | Mobile touch animation and interaction principles |
+
+**MCP Servers:**
+
+| Server      | Package / Command                      | Purpose                                          |
+|-------------|----------------------------------------|--------------------------------------------------|
+| Flutter/Dart| `dart run dart_mcp_server` (local)     | Dart analyzer, widget tree, pub.dev search       |
+| Mobile-MCP  | `@mobilenext/mobile-mcp@latest` (npm)  | Device automation, accessibility snapshots        |
+
+**Agents:**
+
+- `@mobile` — Senior mobile engineer with cross-platform expertise (React Native, Flutter, Expo), all 5 skills, and optional MCP access.
+
+**Companion tools** *(not auto-installed, documented for reference)*:
+- [Detox](https://github.com/wix/Detox) — Gray-box E2E testing for React Native (`npm install -g detox-cli`)
+- [Maestro](https://github.com/mobile-dev-inc/maestro) — YAML-based mobile UI testing (`curl -Ls https://get.maestro.mobile.dev | bash`)
+
 ---
 
 ## Prerequisites
@@ -225,9 +255,9 @@ Examples:
 | Profile | What's included |
 |---------|----------------|
 | **Minimal** | Core engine (`opencode-ai`) only |
-| **Backend Dev** | Core + Backend MCPs (4, each optional) + 6 backend skills + `@backend` agent |
+| **Backend Dev** | Core + Backend MCPs (4, each optional) + 7 backend skills + `@backend` agent |
 | **Full Stack** | Backend Dev + Frontend Pack (5 design skills + `@frontend` agent) + tokscale + repomix |
-| **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + AI Engineering Pack (12 skills + 4 MCPs + `@ai-engineer` agent) + Playwright + Chromium + oh-my-openagent |
+| **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + AI Engineering Pack (12 skills + 4 MCPs + `@ai-engineer` agent) + Mobile Pack (5 skills + 2 MCPs + `@mobile` agent) + Playwright + Chromium + oh-my-openagent |
 | **Custom** | Pick each component individually |
 
 ### Re-running the Installer
