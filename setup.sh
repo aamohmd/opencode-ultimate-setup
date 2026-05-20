@@ -516,11 +516,18 @@ if _want_general; then
   fi
 
   if mcp_configured memory; then
-    already "  Memory MCP"
+    already "  Memory MCP (Engram)"
     mark_installed "Memory MCP"
     MCP_MEMORY=true
-  elif prompt_yes_no "  Memory MCP? (Persistent knowledge graph)"; then
+  elif prompt_yes_no "  Memory MCP? (Engram persistent shared memory)"; then
     MCP_MEMORY=true
+    if ! command -v engram >/dev/null 2>&1; then
+      if command -v brew >/dev/null 2>&1; then
+        spinner_task "Installing engram via Homebrew" brew install gentleman-programming/tap/engram
+      else
+        warn "Please install engram manually: https://github.com/Gentleman-Programming/engram"
+      fi
+    fi
     mark_installed "Memory MCP"
   fi
 
@@ -1124,7 +1131,7 @@ if (isTrue(process.env.MCP_FETCH)) {
   d.mcp['fetch'] = { type: 'local', command: ['uvx', 'mcp-server-fetch'], enabled: true };
 }
 if (isTrue(process.env.MCP_MEMORY)) {
-  d.mcp['memory'] = { type: 'local', command: ['npx', '-y', '@modelcontextprotocol/server-memory'], enabled: true };
+  d.mcp['memory'] = { type: 'local', command: ['engram', 'mcp'], enabled: true };
 }
 if (isTrue(process.env.MCP_SQLITE)) {
   d.mcp['sqlite'] = { type: 'local', command: ['uvx', 'mcp-server-sqlite'], enabled: true };
@@ -1151,6 +1158,13 @@ NODE
     success "Config applied -- ${mcp_result}"
   else
     warn "Config write may have failed -- check ${OPENCODE_CONFIG_DIR}/opencode.json"
+  fi
+
+  if [ "$MCP_MEMORY" = true ] && [ "$DRY_RUN" = false ]; then
+    AG_MCP_CONFIG="$HOME/.gemini/antigravity-cli/mcp_config.json"
+    mkdir -p "$(dirname "$AG_MCP_CONFIG")"
+    echo '{ "mcpServers": { "engram": { "command": "engram", "args": ["mcp"] } } }' > "$AG_MCP_CONFIG"
+    success "Configured Antigravity CLI to share Engram memory"
   fi
 fi
 
