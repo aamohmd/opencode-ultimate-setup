@@ -1040,6 +1040,11 @@ if (!Array.isArray(d.plugin)) d.plugin = [];
 Object.keys(d.mcp).forEach(k => {
   if (!d.mcp[k].type && d.mcp[k].command) d.mcp[k].type = "local";
   if (d.mcp[k].enabled === undefined) d.mcp[k].enabled = true;
+  // opencode-ai requires command to be an array, not command + args.
+  if (typeof d.mcp[k].command === "string" && Array.isArray(d.mcp[k].args)) {
+    d.mcp[k].command = [d.mcp[k].command, ...d.mcp[k].args];
+    delete d.mcp[k].args;
+  }
 });
 
 const readJson = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
@@ -1047,10 +1052,10 @@ const servers = (readJson(backendPath) || {}).mcp || {};
 const frontendServers = (readJson(frontendPath) || {}).mcp || {};
 
 const fallbacks = {
-  docker: { type: "local", command: "npx", args: ["-y", "mcp-server-docker"], enabled: true },
-  sentry: { type: "local", command: "npx", args: ["-y", "@modelcontextprotocol/server-sentry"], enabled: true },
+  docker: { type: "local", command: ["npx", "-y", "mcp-server-docker"], enabled: true },
+  sentry: { type: "local", command: ["npx", "-y", "@modelcontextprotocol/server-sentry"], enabled: true },
   context7: { type: "remote", url: "https://mcp.context7.com/mcp", enabled: true },
-  stripe: { type: "local", command: "npx", args: ["-y", "@stripe/mcp"], enabled: true }
+  stripe: { type: "local", command: ["npx", "-y", "@stripe/mcp"], enabled: true }
 };
 
 const copyServer = (key, transform) => {
@@ -1079,7 +1084,7 @@ if (isTrue(process.env.MCP_STRIPE))   copyServer('stripe', s => {
 
 // 3. Append Landing Page Pack MCP
 if (isTrue(process.env.MCP_21ST_DEV)) {
-  const base = frontendServers['21st-dev'] || { type: 'local', command: 'npx', args: ['-y', '@21st-dev/magic@latest'], enabled: true };
+  const base = frontendServers['21st-dev'] || { type: 'local', command: ['npx', '-y', '@21st-dev/magic@latest'], enabled: true };
   const srv = JSON.parse(JSON.stringify(base));
   if (!srv.type) srv.type = 'local';
   srv.enabled = true;
@@ -1101,35 +1106,35 @@ if (isTrue(process.env.MCP_WANDB)) {
   d.mcp['wandb'] = srv;
 }
 if (isTrue(process.env.MCP_PINECONE)) {
-  const srv = { type: 'local', command: 'npx', args: ['-y', '@pinecone-database/mcp'], enabled: true, environment: {} };
+  const srv = { type: 'local', command: ['npx', '-y', '@pinecone-database/mcp'], enabled: true, environment: {} };
   if (process.env._PINECONE_KEY) srv.environment.PINECONE_API_KEY = process.env._PINECONE_KEY;
   d.mcp['pinecone'] = srv;
 }
 
 // 5. Append Mobile Development Pack MCPs
 if (isTrue(process.env.MCP_FLUTTER)) {
-  d.mcp['flutter'] = { type: 'local', command: 'dart', args: ['run', 'dart_mcp_server'], enabled: true };
+  d.mcp['flutter'] = { type: 'local', command: ['dart', 'run', 'dart_mcp_server'], enabled: true };
 }
 if (isTrue(process.env.MCP_MOBILE_MCP)) {
-  d.mcp['mobile-mcp'] = { type: 'local', command: 'npx', args: ['-y', '@mobilenext/mobile-mcp@latest'], enabled: true };
+  d.mcp['mobile-mcp'] = { type: 'local', command: ['npx', '-y', '@mobilenext/mobile-mcp@latest'], enabled: true };
 }
 
 // 6. Append General Utility MCPs
 if (isTrue(process.env.MCP_FETCH)) {
-  d.mcp['fetch'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-fetch'], enabled: true };
+  d.mcp['fetch'] = { type: 'local', command: ['uvx', 'mcp-server-fetch'], enabled: true };
 }
 if (isTrue(process.env.MCP_MEMORY)) {
-  d.mcp['memory'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-memory'], enabled: true };
+  d.mcp['memory'] = { type: 'local', command: ['npx', '-y', '@modelcontextprotocol/server-memory'], enabled: true };
 }
 if (isTrue(process.env.MCP_SQLITE)) {
-  d.mcp['sqlite'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-sqlite'], enabled: true };
+  d.mcp['sqlite'] = { type: 'local', command: ['uvx', 'mcp-server-sqlite'], enabled: true };
 }
 if (isTrue(process.env.MCP_TIME)) {
-  d.mcp['time'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-time'], enabled: true };
+  d.mcp['time'] = { type: 'local', command: ['uvx', 'mcp-server-time'], enabled: true };
 }
 if (isTrue(process.env.MCP_FILESYSTEM)) {
   const homeDir = process.env.HOME || '/';
-  d.mcp['filesystem'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-filesystem', homeDir, '/'], enabled: true };
+  d.mcp['filesystem'] = { type: 'local', command: ['npx', '-y', '@modelcontextprotocol/server-filesystem', homeDir, '/'], enabled: true };
 }
 
 fs.mkdirSync(configDir, { recursive: true });

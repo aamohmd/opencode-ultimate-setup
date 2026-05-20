@@ -89,10 +89,10 @@ Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
 
 | Server       | Package / Endpoint                     | Purpose                                          |
 |--------------|----------------------------------------|--------------------------------------------------|
-| Fetch        | `@modelcontextprotocol/server-fetch`   | Read web pages and convert them to Markdown      |
+| Fetch        | `uvx mcp-server-fetch`                 | Read web pages and convert them to Markdown      |
 | Memory       | `@modelcontextprotocol/server-memory`  | Persistent knowledge graph across sessions       |
-| SQLite       | `@modelcontextprotocol/server-sqlite`  | Local database exploration and querying          |
-| Time         | `@modelcontextprotocol/server-time`    | Read current time and timezone                   |
+| SQLite       | `uvx mcp-server-sqlite`                | Local database exploration and querying          |
+| Time         | `uvx mcp-server-time`                  | Read current time and timezone                   |
 | Filesystem   | `@modelcontextprotocol/server-filesystem` | Read/list local files within allowed directories |
 
 ### Backend Pack (Optional)
