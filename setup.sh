@@ -486,6 +486,77 @@ else
 fi
 
 # =============================================================================
+# STEP 4a -- General Utilities Pack
+# =============================================================================
+printf "\n  ${BLUE}${BOLD}-- General Utilities Pack${RESET}\n\n"
+
+MCP_FETCH=false
+MCP_MEMORY=false
+MCP_SQLITE=false
+MCP_TIME=false
+MCP_FILESYSTEM=false
+
+_want_general() {
+  profile_includes "general" && return 0
+  [ -n "$PROFILE" ] && [ "$PROFILE" != "custom" ] && [ "$PROFILE" != "minimal" ] && return 0
+  [ "$PROFILE" = "minimal" ] && return 1
+  prompt_yes_no "Install General Utilities Pack? (Fetch, Memory, SQLite, Time, Filesystem MCPs)"
+}
+
+if _want_general; then
+  printf "  ${BOLD}Zero-Setup Utility MCPs${RESET}\n"
+
+  if mcp_configured fetch; then
+    already "  Fetch MCP"
+    mark_installed "Fetch MCP"
+    MCP_FETCH=true
+  elif prompt_yes_no "  Fetch MCP? (Read web pages as markdown)"; then
+    MCP_FETCH=true
+    mark_installed "Fetch MCP"
+  fi
+
+  if mcp_configured memory; then
+    already "  Memory MCP"
+    mark_installed "Memory MCP"
+    MCP_MEMORY=true
+  elif prompt_yes_no "  Memory MCP? (Persistent knowledge graph)"; then
+    MCP_MEMORY=true
+    mark_installed "Memory MCP"
+  fi
+
+  if mcp_configured sqlite; then
+    already "  SQLite MCP"
+    mark_installed "SQLite MCP"
+    MCP_SQLITE=true
+  elif prompt_yes_no "  SQLite MCP? (Local database exploration)"; then
+    MCP_SQLITE=true
+    mark_installed "SQLite MCP"
+  fi
+
+  if mcp_configured time; then
+    already "  Time MCP"
+    mark_installed "Time MCP"
+    MCP_TIME=true
+  elif prompt_yes_no "  Time MCP? (Current time and timezone)"; then
+    MCP_TIME=true
+    mark_installed "Time MCP"
+  fi
+
+  if mcp_configured filesystem; then
+    already "  Filesystem MCP"
+    mark_installed "Filesystem MCP"
+    MCP_FILESYSTEM=true
+  elif prompt_yes_no "  Filesystem MCP? (Read/list local files)"; then
+    MCP_FILESYSTEM=true
+    mark_installed "Filesystem MCP"
+  fi
+
+  mark_installed "General Utilities Pack"
+else
+  mark_skipped "General Utilities Pack"
+fi
+
+# =============================================================================
 # STEP 4b -- Frontend pack
 # =============================================================================
 printf "\n  ${BLUE}${BOLD}-- Frontend Pack${RESET}\n\n"
@@ -932,6 +1003,11 @@ if [ "$DRY_RUN" = false ]; then
   STRIPE_KEY="${STRIPE_KEY:-}"         \
   MCP_FLUTTER="$MCP_FLUTTER"           \
   MCP_MOBILE_MCP="$MCP_MOBILE_MCP"     \
+  MCP_FETCH="${MCP_FETCH:-false}"      \
+  MCP_MEMORY="${MCP_MEMORY:-false}"    \
+  MCP_SQLITE="${MCP_SQLITE:-false}"    \
+  MCP_TIME="${MCP_TIME:-false}"        \
+  MCP_FILESYSTEM="${MCP_FILESYSTEM:-false}" \
   OC_SCRIPT_DIR="$SCRIPT_DIR"          \
   OC_CONFIG_DIR="$OPENCODE_CONFIG_DIR" \
   node - > "$_mcp_tmp" <<'NODE'
@@ -990,6 +1066,8 @@ const copyServer = (key, transform) => {
   d.mcp[key] = srv;
 };
 
+const isTrue = val => String(val).toLowerCase() === 'true';
+
 // 2. Append chosen infrastructure tools
 if (isTrue(process.env.MCP_DOCKER))   copyServer('docker');
 if (isTrue(process.env.MCP_SENTRY))   copyServer('sentry');
@@ -1034,6 +1112,24 @@ if (isTrue(process.env.MCP_FLUTTER)) {
 }
 if (isTrue(process.env.MCP_MOBILE_MCP)) {
   d.mcp['mobile-mcp'] = { type: 'local', command: 'npx', args: ['-y', '@mobilenext/mobile-mcp@latest'], enabled: true };
+}
+
+// 6. Append General Utility MCPs
+if (isTrue(process.env.MCP_FETCH)) {
+  d.mcp['fetch'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-fetch'], enabled: true };
+}
+if (isTrue(process.env.MCP_MEMORY)) {
+  d.mcp['memory'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-memory'], enabled: true };
+}
+if (isTrue(process.env.MCP_SQLITE)) {
+  d.mcp['sqlite'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-sqlite'], enabled: true };
+}
+if (isTrue(process.env.MCP_TIME)) {
+  d.mcp['time'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-time'], enabled: true };
+}
+if (isTrue(process.env.MCP_FILESYSTEM)) {
+  const homeDir = process.env.HOME || '/';
+  d.mcp['filesystem'] = { type: 'local', command: 'npx', args: ['-y', '@modelcontextprotocol/server-filesystem', homeDir, '/'], enabled: true };
 }
 
 fs.mkdirSync(configDir, { recursive: true });

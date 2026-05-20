@@ -81,6 +81,20 @@ No extra setup required.
 
 ## 🔧 Modules
 
+### General Utilities Pack (Optional)
+
+Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
+
+**MCP Servers** *(all zero-setup, prompted during install)*:
+
+| Server       | Package / Endpoint                     | Purpose                                          |
+|--------------|----------------------------------------|--------------------------------------------------|
+| Fetch        | `@modelcontextprotocol/server-fetch`   | Read web pages and convert them to Markdown      |
+| Memory       | `@modelcontextprotocol/server-memory`  | Persistent knowledge graph across sessions       |
+| SQLite       | `@modelcontextprotocol/server-sqlite`  | Local database exploration and querying          |
+| Time         | `@modelcontextprotocol/server-time`    | Read current time and timezone                   |
+| Filesystem   | `@modelcontextprotocol/server-filesystem` | Read/list local files within allowed directories |
+
 ### Backend Pack (Optional)
 
 Included in **Backend Dev**, **Full Stack**, and **Everything** profiles:
@@ -263,7 +277,7 @@ Examples:
 | Profile | What's included |
 |---------|----------------|
 | **Minimal** | Core engine (`opencode-ai`) only |
-| **Backend Dev** | Core + Backend MCPs (4, each optional) + 7 backend skills + `@backend` agent |
+| **Backend Dev** | Core + General Utilities Pack (5 zero-setup MCPs) + Backend MCPs (4, each optional) + 7 backend skills + `@backend` agent |
 | **Full Stack** | Backend Dev + Frontend Pack (5 design skills + `@frontend` agent) + tokscale + repomix |
 | **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + AI Engineering Pack (12 skills + 4 MCPs + `@ai-engineer` agent) + Mobile Pack (5 skills + 2 MCPs + `@mobile` agent) + Playwright + Chromium |
 | **Custom** | Pick each component individually |
