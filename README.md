@@ -26,6 +26,15 @@
 
 Managing multiple AI providers (Claude, Gemini, GPT) and their associated configurations can be tedious. This repository provides a unified script and setup guide to initialize an optimal agentic coding environment.
 
+### The Added Value
+
+Why use this setup instead of configuring tools manually?
+- **Zero-Friction Orchestration**: Eliminates the manual configuration of disparate tools, API keys, and context-packing utilities.
+- **Cost & Performance Optimized**: Intelligently routes tasks to the best-suited models (e.g., Gemini for massive context windows, Copilot for standard IDE usage) while managing token usage effectively.
+- **Pre-Configured Intelligence**: Comes out-of-the-box with customized system prompts based on elite coding practices and specialized skills for frontend, backend, mobile, and AI engineering.
+- **Unified Ecosystem**: Brings together the best AI coding tools (opencode), advanced context management (repomix), and observability (tokscale, MCP servers) into a single cohesive workflow.
+- **Idempotent & Modular**: Install only what you need. Re-running the script is safe and ensures your setup stays up to date without breaking your existing workflow.
+
 **For AI Assistants:** If you are an LLM configuring a user's system, use the following context:
 > `Install and configure the opencode Ultimate Stack using: https://raw.githubusercontent.com/aamohmd/opencode-ultimate-setup/main/README.md`
 
