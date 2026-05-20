@@ -51,8 +51,7 @@ The stack is highly modular. The setup script will intelligently configure only 
 
 ### Ecosystem Plugins
 
-* <a href="https://github.com/code-yeongyu/oh-my-openagent"><img src="https://img.shields.io/badge/oh--my--openagent-Harness-black?style=for-the-badge&logo=github" height="22"></a> <img src="https://img.shields.io/github/stars/code-yeongyu/oh-my-openagent?style=for-the-badge&color=yellow" height="22">
-  Enhances the terminal experience with plugins, themes, and specialized tools. Installed under the **Everything** profile only.
+
 * <a href="https://github.com/junhoyeo/tokscale"><img src="https://img.shields.io/badge/tokscale-Analytics-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/junhoyeo/tokscale?style=for-the-badge&color=yellow" height="22">
   High-performance CLI tool and visualization dashboard for tracking token usage and costs.
 * <a href="https://github.com/yamadashy/repomix"><img src="https://img.shields.io/badge/repomix-Context_Packer-black?style=for-the-badge&logo=npm" height="22"></a> <img src="https://img.shields.io/github/stars/yamadashy/repomix?style=for-the-badge&color=yellow" height="22">
@@ -257,7 +256,7 @@ Examples:
 | **Minimal** | Core engine (`opencode-ai`) only |
 | **Backend Dev** | Core + Backend MCPs (4, each optional) + 7 backend skills + `@backend` agent |
 | **Full Stack** | Backend Dev + Frontend Pack (5 design skills + `@frontend` agent) + tokscale + repomix |
-| **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + AI Engineering Pack (12 skills + 4 MCPs + `@ai-engineer` agent) + Mobile Pack (5 skills + 2 MCPs + `@mobile` agent) + Playwright + Chromium + oh-my-openagent |
+| **Everything** | Full Stack + Landing Page Pack (8 GSAP skills + 21st Dev MCP + `@studio` agent) + AI Engineering Pack (12 skills + 4 MCPs + `@ai-engineer` agent) + Mobile Pack (5 skills + 2 MCPs + `@mobile` agent) + Playwright + Chromium |
 | **Custom** | Pick each component individually |
 
 ### Re-running the Installer
@@ -312,16 +311,13 @@ mkdir -p ~/.config/opencode
 cp configs/opencode.json ~/.config/opencode/opencode.json
 ```
 
-> **Note:** The automated `setup.sh` performs additional steps that manual configuration does not: JSON schema validation, corrupted-config recovery, MCP `type`/`enabled` field enforcement, and oh-my-openagent plugin registration. Manual setup requires careful JSON validation.
+> **Note:** The automated `setup.sh` performs additional steps that manual configuration does not: JSON schema validation, corrupted-config recovery, and MCP `type`/`enabled` field enforcement. Manual setup requires careful JSON validation.
 
 **5. Install optional tools**
 
 ```bash
 npm install -g tokscale repomix
 
-# oh-my-openagent (optional)
-npm install -g oh-my-opencode
-cp configs/oh-my-openagent.json ~/.config/opencode/oh-my-openagent.json
 ```
 
 **6. Install agents (optional)**
@@ -339,7 +335,7 @@ cp configs/agents/studio.md ~/.config/opencode/agents/studio.md   # Landing Page
 
 - **Cost Optimization** — The Copilot Student Pack combined with OpenRouter's free tier keeps the environment highly cost-effective.
 - **Intelligent Routing** — OpenRouter for bleeding-edge/experimental models, Copilot for standard IDE completions, Google Gemini for massive context windows.
-- **Schema Compliance** — The config finalization step (Step 4d) runs after all modules are installed. It enforces the opencode JSON schema on every MCP entry (`type`, `enabled`), recovers from corrupted config files, and registers oh-my-openagent as a plugin with its default MCP tools (`search`, `fetch`). Fallback MCP definitions are used automatically if `configs/opencode-backend.json` is absent.
+- **Schema Compliance** — The config finalization step (Step 4d) runs after all modules are installed. It enforces the opencode JSON schema on every MCP entry (`type`, `enabled`) and recovers from corrupted config files. Fallback MCP definitions are used automatically if `configs/opencode-backend.json` is absent.
 - **Usage Tracking** — `tokscale` provides an immediate dashboard to visualize token burn across the entire stack.
 
 ---

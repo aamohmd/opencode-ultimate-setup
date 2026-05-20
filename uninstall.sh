@@ -127,7 +127,6 @@ PACKAGES=(
   "mcp-server-docker"
   "@stripe/mcp"
   "tokscale"
-  "oh-my-opencode"
   "repomix"
 )
 

@@ -317,7 +317,7 @@ if [ -z "$PROFILE" ] && [ "$NON_INTERACTIVE" = false ]; then
   printf "  ${CYAN}1${RESET}  ${BOLD}Minimal${RESET}      Core engine only\n"
   printf "  ${CYAN}2${RESET}  ${BOLD}Backend Dev${RESET}  Core + Backend MCPs + Skills + Agent\n"
   printf "  ${CYAN}3${RESET}  ${BOLD}Full Stack${RESET}   Backend + Frontend + tokscale + repomix\n"
-  printf "  ${CYAN}4${RESET}  ${BOLD}Everything${RESET}   All of the above + Mobile + Playwright + oh-my-openagent\n"
+  printf "  ${CYAN}4${RESET}  ${BOLD}Everything${RESET}   All of the above + Mobile + Playwright\n"
   printf "  ${CYAN}5${RESET}  ${BOLD}Custom${RESET}       I'll pick each component myself\n\n"
   printf "  ${CYAN}?${RESET} ${BOLD}Profile${RESET} [1-5, default: 5]: "
   read -r pick </dev/tty
@@ -377,12 +377,6 @@ if (src) {
 BASECFG
 fi
 
-if [ -f "${SCRIPT_DIR}/configs/oh-my-openagent.json" ] \
-   && npm_installed oh-my-opencode \
-   && [ "$DRY_RUN" = false ]; then
-  cp "${SCRIPT_DIR}/configs/oh-my-openagent.json" \
-     "${OPENCODE_CONFIG_DIR}/oh-my-openagent.json"
-fi
 
 # =============================================================================
 # STEP 4 -- Backend Pack
@@ -916,21 +910,6 @@ else
   mark_skipped "repomix"
 fi
 
-OMA_INSTALLED=false
-if npm_installed oh-my-opencode; then
-  already "oh-my-openagent"
-  mark_installed "oh-my-openagent"
-  OMA_INSTALLED=true
-  # Trigger headless init just in case it hasn't run yet
-  oh-my-opencode --help >/dev/null 2>&1 || true
-elif want "oma" "Install oh-my-openagent? (advanced terminal harness + themes)"; then
-  spinner_task "Installing oh-my-openagent" npm install -g oh-my-opencode
-  mark_installed "oh-my-openagent"
-  OMA_INSTALLED=true
-  spinner_task "Bootstrapping OMA default tools" oh-my-opencode --help || true
-else
-  mark_skipped "oh-my-openagent"
-fi
 
 # =============================================================================
 # STEP 4f -- Finalize Configuration Build
@@ -953,7 +932,6 @@ if [ "$DRY_RUN" = false ]; then
   STRIPE_KEY="${STRIPE_KEY:-}"         \
   MCP_FLUTTER="$MCP_FLUTTER"           \
   MCP_MOBILE_MCP="$MCP_MOBILE_MCP"     \
-  OMA_INSTALLED="${OMA_INSTALLED}"     \
   OC_SCRIPT_DIR="$SCRIPT_DIR"          \
   OC_CONFIG_DIR="$OPENCODE_CONFIG_DIR" \
   node - > "$_mcp_tmp" <<'NODE'
@@ -980,21 +958,9 @@ if (!d.mcp || typeof d.mcp !== 'object') d.mcp = {};
 // FIX: Plugin must be an array of strings per the opencode schema
 if (!Array.isArray(d.plugin)) d.plugin = [];
 
-// 1. If OMA is installed, explicitly register it as a PLUGIN
-const isTrue = v => String(v).toLowerCase() === 'true';
 
-if (isTrue(process.env.OMA_INSTALLED)) {
-  // Push OMA into the array if it isn't already there
-  if (!d.plugin.includes('oh-my-opencode')) {
-    d.plugin.push('oh-my-opencode');
-  }
-  
-  // Inject its default MCPs with strict schema formatting
-  if (!d.mcp.search) d.mcp.search = { type: "local", command: "npx", args: ["-y", "@modelcontextprotocol/server-brave-search"], enabled: true };
-  if (!d.mcp.fetch)  d.mcp.fetch  = { type: "local", command: "npx", args: ["-y", "@modelcontextprotocol/server-fetch"], enabled: true };
-}
 
-// 2. Format existing broken tools if they exist (Fixes OMA legacy injections)
+// 1. Format existing broken tools if they exist (Fixes OMA legacy injections)
 Object.keys(d.mcp).forEach(k => {
   if (!d.mcp[k].type && d.mcp[k].command) d.mcp[k].type = "local";
   if (d.mcp[k].enabled === undefined) d.mcp[k].enabled = true;
@@ -1024,7 +990,7 @@ const copyServer = (key, transform) => {
   d.mcp[key] = srv;
 };
 
-// 3. Append chosen infrastructure tools
+// 2. Append chosen infrastructure tools
 if (isTrue(process.env.MCP_DOCKER))   copyServer('docker');
 if (isTrue(process.env.MCP_SENTRY))   copyServer('sentry');
 if (isTrue(process.env.MCP_CONTEXT7)) copyServer('context7');
@@ -1033,7 +999,7 @@ if (isTrue(process.env.MCP_STRIPE))   copyServer('stripe', s => {
   if (process.env.STRIPE_KEY) s.environment.STRIPE_SECRET_KEY = process.env.STRIPE_KEY;
 });
 
-// 4. Append Landing Page Pack MCP
+// 3. Append Landing Page Pack MCP
 if (isTrue(process.env.MCP_21ST_DEV)) {
   const base = frontendServers['21st-dev'] || { type: 'local', command: 'npx', args: ['-y', '@21st-dev/magic@latest'], enabled: true };
   const srv = JSON.parse(JSON.stringify(base));
@@ -1044,7 +1010,7 @@ if (isTrue(process.env.MCP_21ST_DEV)) {
   d.mcp['21st-dev'] = srv;
 }
 
-// 5. Append AI Engineering MCPs
+// 4. Append AI Engineering MCPs
 if (isTrue(process.env.MCP_HUGGINGFACE)) {
   d.mcp['huggingface'] = { type: 'remote', url: 'https://huggingface.co/mcp', enabled: true };
 }
@@ -1062,7 +1028,7 @@ if (isTrue(process.env.MCP_PINECONE)) {
   d.mcp['pinecone'] = srv;
 }
 
-// 6. Append Mobile Development Pack MCPs
+// 5. Append Mobile Development Pack MCPs
 if (isTrue(process.env.MCP_FLUTTER)) {
   d.mcp['flutter'] = { type: 'local', command: 'dart', args: ['run', 'dart_mcp_server'], enabled: true };
 }
