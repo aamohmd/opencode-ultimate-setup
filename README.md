@@ -198,6 +198,34 @@ Includes `ml-pipeline-creation`, `model-deployment`, `hyperparameter-tuning`, `d
 - [mcpbr](https://github.com/mcp-universe/mcpbr) — MCP Benchmark Runner (`npx mcpbr-cli run`)
 - [DeepEval](https://github.com/confident-ai/deepeval) — LLM Evaluation Framework
 
+### Architect and System Design Pack (Optional)
+
+Included in the **Everything** profile; prompted during **Custom** install:
+
+**Skills** *(5 official modules for architectural system design)*:
+
+| Skill | Covers |
+|-------|--------|
+| aws-architecture-patterns | AWS service selection, well-architected lens, cost patterns |
+| system-design-decisions | Scalability patterns, CAP theorem, database selection, caching |
+| cloud-tradeoffs | Managed vs self-hosted, multi-cloud, egress costs |
+| container-orchestration | Docker, Kubernetes, ECS, Fly.io, Railway — when to use each |
+| adr-writing | MADR format, decision log best practices, superseding decisions |
+
+**MCP Servers:**
+
+| Server | Purpose | Key Required? |
+|--------|---------|---------------|
+| `mcp-server-fetch` | Fetch live docs, benchmarks, comparison pages | No |
+| `server-github` | Check GitHub stars, activity, issue health of candidate tools | Yes (`GITHUB_TOKEN`) |
+| `server-brave-search` | Search for current benchmarks and community opinions | Yes (`BRAVE_API_KEY`) |
+| `server-memory` | Persist decisions as a knowledge graph across sessions | No |
+| `server-filesystem` | Write ADR files directly to `docs/architecture/decisions/` | No |
+
+**Agents:**
+
+- `@architect` — Elite Software Architect for transforming product ideas into structured PRDs, ADRs, and technical diagrams before implementation.
+
 ### Mobile Development Pack (Optional)
 
 Included in the **Everything** profile; prompted during **Custom** install:

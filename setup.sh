@@ -584,9 +584,9 @@ if _want_frontend; then
     set +e
     spinner_task "Installing Playwright" npm install -g playwright
     if [ "$OS_TYPE" = "linux" ] || [ "$OS_TYPE" = "wsl" ]; then
-      spinner_task "Installing Chromium + system deps" npx playwright install --with-deps chromium
+      spinner_task "Installing Chromium + deps (~3 mins)" npx -y playwright install --with-deps chromium
     else
-      spinner_task "Installing Chromium" npx playwright install chromium
+      spinner_task "Installing Chromium (~3 mins)" npx -y playwright install chromium
     fi
     set -e
     mark_installed "Playwright + Chromium"
@@ -964,7 +964,92 @@ else
 fi
 
 # =============================================================================
-# STEP 4e -- Optional tools
+# STEP 4f -- Architect and System Design Pack
+# =============================================================================
+printf "\n  ${BLUE}${BOLD}-- Architect and System Design Pack${RESET}\n\n"
+
+MCP_GITHUB=false
+MCP_BRAVE_SEARCH=false
+
+_want_architect() {
+  profile_includes "architect" && return 0
+  [ -n "$PROFILE" ] && [ "$PROFILE" != "custom" ] && return 1
+  prompt_yes_no "Install Architect and System Design Pack? (System Design skills, MCPs + @architect agent)"
+}
+
+if _want_architect; then
+
+  # Architect Skills
+  ARCH_SRC="${SCRIPT_DIR}/configs/skills/architect"
+  ARCH_DST="${OPENCODE_CONFIG_DIR}/skills/architect"
+  if [ -d "${ARCH_DST}/system-design" ]; then
+    already "  Architect skills"
+    mark_installed "Architect Skills"
+  elif [ -d "$ARCH_SRC" ]; then
+    mkdir -p "$ARCH_DST"
+    _arch_count=0
+    if [ "$DRY_RUN" = false ]; then
+      cp -R "${ARCH_SRC}"/* "${ARCH_DST}/"
+    fi
+    _arch_count=$(find "${ARCH_SRC}" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')
+    success "  Architect skills installed (${_arch_count} modules)"
+    mark_installed "Architect Skills"
+  else
+    warn "configs/skills/architect not found. Skipped."
+  fi
+
+  # Architect MCP servers
+  if prompt_yes_no "  Install GitHub MCP? (reads repo activity for tool evaluation - requires GITHUB_TOKEN)"; then
+    if [ -z "${GITHUB_TOKEN:-}" ]; then
+      GITHUB_TOKEN=$(prompt_secret "    GitHub Personal Access Token (classic or fine-grained):")
+    fi
+    if [ -n "${GITHUB_TOKEN:-}" ]; then
+      MCP_GITHUB=true
+      mark_installed "GitHub MCP"
+    else
+      warn "    GitHub MCP skipped (no token provided)"
+    fi
+  fi
+
+  if prompt_yes_no "  Install Brave Search MCP? (search benchmarks & comparisons - requires BRAVE_API_KEY)"; then
+    if [ -z "${BRAVE_API_KEY:-}" ]; then
+      BRAVE_API_KEY=$(prompt_secret "    Brave Search API Key:")
+    fi
+    if [ -n "${BRAVE_API_KEY:-}" ]; then
+      MCP_BRAVE_SEARCH=true
+      mark_installed "Brave Search MCP"
+    else
+      warn "    Brave Search MCP skipped (no key provided)"
+    fi
+  fi
+  
+
+
+  # @architect agent
+  if [ -f "${OPENCODE_CONFIG_DIR}/agents/architect.md" ]; then
+    already "  @architect agent"
+    mark_installed "@architect agent"
+  elif prompt_yes_no "  Install @architect agent? (use @architect for system design in opencode)"; then
+    if [ -f "${SCRIPT_DIR}/configs/agents/architect.md" ]; then
+      mkdir -p "${OPENCODE_CONFIG_DIR}/agents"
+      if [ "$DRY_RUN" = false ]; then
+        cp "${SCRIPT_DIR}/configs/agents/architect.md" \
+           "${OPENCODE_CONFIG_DIR}/agents/architect.md"
+      fi
+      success "  @architect agent installed"
+      mark_installed "@architect agent"
+    else
+      warn "configs/agents/architect.md not found. Skipped."
+    fi
+  fi
+
+  mark_installed "Architect Pack"
+else
+  mark_skipped "Architect Pack"
+fi
+
+# =============================================================================
+# STEP 4g -- Optional tools
 # =============================================================================
 printf "\n  ${BLUE}${BOLD}-- Optional Tools${RESET}\n\n"
 
@@ -990,12 +1075,16 @@ fi
 
 
 # =============================================================================
-# STEP 4f -- Finalize Configuration Build
+# STEP 4h -- Finalize Configuration Build
 # =============================================================================
 # This runs unconditionally at the end to ensure schema compliance.
 if [ "$DRY_RUN" = false ]; then
   _mcp_tmp=$(mktemp)
   MCP_DOCKER="$MCP_DOCKER"             \
+  MCP_GITHUB="${MCP_GITHUB:-false}"      \
+  MCP_BRAVE_SEARCH="${MCP_BRAVE_SEARCH:-false}" \
+  GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
+  BRAVE_API_KEY="${BRAVE_API_KEY:-}" \
   MCP_SENTRY="$MCP_SENTRY"             \
   MCP_STRIPE="$MCP_STRIPE"             \
   MCP_CONTEXT7="$MCP_CONTEXT7"         \
@@ -1126,7 +1215,19 @@ if (isTrue(process.env.MCP_MOBILE_MCP)) {
   d.mcp['mobile-mcp'] = { type: 'local', command: ['npx', '-y', '@mobilenext/mobile-mcp@latest'], enabled: true };
 }
 
-// 6. Append General Utility MCPs
+// 6. Append Architect Pack MCPs
+if (isTrue(process.env.MCP_GITHUB)) {
+  const srv = { type: 'local', command: ['npx', '-y', '@modelcontextprotocol/server-github'], enabled: true };
+  if (process.env.GITHUB_TOKEN) srv.environment = { GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_TOKEN };
+  d.mcp['github'] = srv;
+}
+if (isTrue(process.env.MCP_BRAVE_SEARCH)) {
+  const srv = { type: 'local', command: ['npx', '-y', '@modelcontextprotocol/server-brave-search'], enabled: true };
+  if (process.env.BRAVE_API_KEY) srv.environment = { BRAVE_API_KEY: process.env.BRAVE_API_KEY };
+  d.mcp['brave-search'] = srv;
+}
+
+// 7. Append General Utility MCPs
 if (isTrue(process.env.MCP_FETCH)) {
   d.mcp['fetch'] = { type: 'local', command: ['uvx', 'mcp-server-fetch'], enabled: true };
 }
