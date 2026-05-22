@@ -150,7 +150,143 @@ if npm_installed playwright; then
 fi
 
 # =============================================================================
-# 2. Config Files
+# 2. Multi-CLI Sync Cleanup
+# =============================================================================
+printf "\n${BLUE}${BOLD}  -- Multi-CLI Sync Cleanup${RESET}\n\n"
+printf "  ${DIM}The installer may have written MCP configs, skills, and instruction\n"
+printf "  blocks into Claude Code, Antigravity CLI, and Codex CLI.${RESET}\n\n"
+
+_OUS_START="<!-- opencode-ultimate-setup:start -->"
+_OUS_END="<!-- opencode-ultimate-setup:end -->"
+
+# Remove the sentinel block from a file (leaves all other content intact)
+_remove_sentinel_block() {
+  local file="$1"
+  [ -f "$file" ] || return 0
+  if grep -qF "$_OUS_START" "$file" 2>/dev/null; then
+    OUS_FILE="$file" OUS_START="$_OUS_START" OUS_END="$_OUS_END" node - <<'__RM_SENTINEL__'
+const fs  = require('fs');
+const f   = process.env.OUS_FILE;
+const s   = process.env.OUS_START;
+const e   = process.env.OUS_END;
+const esc = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const re  = new RegExp('(?:\\n\\n)?' + esc(s) + '[\\s\\S]*?' + esc(e) + '\\n?');
+let cur   = fs.readFileSync(f, 'utf8');
+fs.writeFileSync(f, cur.replace(re, ''));
+__RM_SENTINEL__
+    success "  Sentinel block removed from $(basename "${file}")"
+  else
+    detail "  No opencode block found in $(basename "${file}") -- skipped"
+  fi
+}
+
+_manifest="${OPENCODE_CONFIG_DIR}/.sync-manifest"
+
+if [ ! -f "$_manifest" ]; then
+  warn "No .sync-manifest found. Cannot safely determine which external files to clean up."
+  detail "Please manually check ~/.claude/, ~/.gemini/antigravity-cli/, and ~/.codex/ for opencode entries."
+else
+  if prompt_yes_no "  Remove opencode entries from synced CLIs using manifest?" "N"; then
+    _claude_mcp_keys=""
+    _agy_mcp_keys=""
+    _codex_mcp_keys=""
+
+    while IFS=: read -r type target; do
+      [ -z "$type" ] && continue
+      case "$type" in
+        claude_mcp) _claude_mcp_keys="${_claude_mcp_keys}${target}," ;;
+        claude_skill)
+          rm -rf "$HOME/.claude/skills/$target"
+          detail "  Removed Claude Code skill: $target"
+          ;;
+        claude_agent)
+          rm -f "$HOME/.claude/agents/$target"
+          detail "  Removed Claude Code agent: $target"
+          ;;
+        claude_sentinel)
+          _remove_sentinel_block "$HOME/.claude/$target"
+          ;;
+        agy_mcp) _agy_mcp_keys="${_agy_mcp_keys}${target}," ;;
+        agy_skill)
+          rm -rf "$HOME/.gemini/antigravity-cli/skills/$target"
+          detail "  Removed Antigravity CLI skill: $target"
+          ;;
+        agy_agent)
+          _target_dir="${target%.md}"
+          rm -rf "$HOME/.gemini/antigravity-cli/agents/$_target_dir"
+          detail "  Removed Antigravity CLI agent: $_target_dir"
+          ;;
+        agy_sentinel)
+          _remove_sentinel_block "$HOME/.gemini/$target"
+          ;;
+        codex_mcp) _codex_mcp_keys="${_codex_mcp_keys}${target}," ;;
+        codex_sentinel)
+          _remove_sentinel_block "$HOME/.codex/$target"
+          ;;
+      esac
+    done < "$_manifest"
+
+    # Now remove MCP keys using node
+    if [ -n "$_claude_mcp_keys" ] && [ -f "$HOME/.claude/mcp.json" ]; then
+      KEYS="$_claude_mcp_keys" TARGET="$HOME/.claude/mcp.json" node - <<'__RM_CLAUDE_MCP__'
+const fs = require('fs');
+try {
+  let cl = JSON.parse(fs.readFileSync(process.env.TARGET, 'utf8'));
+  const keys = process.env.KEYS.split(',').filter(Boolean);
+  if (cl.mcpServers) keys.forEach(k => delete cl.mcpServers[k]);
+  fs.writeFileSync(process.env.TARGET, JSON.stringify(cl, null, 2));
+} catch {}
+__RM_CLAUDE_MCP__
+      detail "  Removed opencode MCP entries from ~/.claude/mcp.json"
+    fi
+
+    if [ -n "$_agy_mcp_keys" ] && [ -f "$HOME/.gemini/antigravity-cli/mcp_config.json" ]; then
+      KEYS="$_agy_mcp_keys" TARGET="$HOME/.gemini/antigravity-cli/mcp_config.json" node - <<'__RM_AGY_MCP__'
+const fs = require('fs');
+try {
+  let ag = JSON.parse(fs.readFileSync(process.env.TARGET, 'utf8'));
+  const keys = process.env.KEYS.split(',').filter(Boolean);
+  if (ag.mcpServers) keys.forEach(k => delete ag.mcpServers[k]);
+  fs.writeFileSync(process.env.TARGET, JSON.stringify(ag, null, 2));
+} catch {}
+__RM_AGY_MCP__
+      detail "  Removed opencode MCP entries from ~/.gemini/antigravity-cli/mcp_config.json"
+    fi
+
+    if [ -n "$_codex_mcp_keys" ] && [ -f "$HOME/.codex/config.toml" ]; then
+      KEYS="$_codex_mcp_keys" TARGET="$HOME/.codex/config.toml" node - <<'__RM_CODEX_MCP__'
+const fs = require('fs');
+const keys = process.env.KEYS.split(',').filter(Boolean).map(k => k.replace(/[^a-zA-Z0-9_-]/g, '_'));
+let toml = '';
+try { toml = fs.readFileSync(process.env.TARGET, 'utf8'); } catch {}
+keys.forEach(k => {
+  const lines = toml.split('\n');
+  let out = [];
+  let skip = false;
+  for (const line of lines) {
+    const m = line.match(/^\[([^\]]+)\]/);
+    if (m) {
+      if (m[1] === 'mcp_servers.' + k || m[1].startsWith('mcp_servers.' + k + '.')) skip = true;
+      else skip = false;
+    }
+    if (!skip) out.push(line);
+  }
+  toml = out.join('\n');
+});
+fs.writeFileSync(process.env.TARGET, toml.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n');
+__RM_CODEX_MCP__
+      detail "  Removed opencode MCP entries from ~/.codex/config.toml"
+    fi
+
+    rm -f "$_manifest"
+    success "  Multi-CLI sync cleanup complete"
+  else
+    detail "  Multi-CLI sync cleanup skipped"
+  fi
+fi
+
+# =============================================================================
+# 3. Config Files
 # =============================================================================
 printf "\n${BLUE}${BOLD}  -- Cleaning Configurations${RESET}\n\n"
 

@@ -14,6 +14,7 @@
 - [Overview](#overview)
 - [What's Included](#whats-included)
 - [Modules](#modules)
+- [Multi-CLI Support](#multi-cli-support)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Manual Configuration](#manual-configuration)
@@ -225,6 +226,44 @@ Included in the **Everything** profile; prompted during **Custom** install:
 **Companion tools** *(not auto-installed, documented for reference)*:
 - [Detox](https://github.com/wix/Detox) — Gray-box E2E testing for React Native (`npm install -g detox-cli`)
 - [Maestro](https://github.com/mobile-dev-inc/maestro) — YAML-based mobile UI testing (`curl -Ls https://get.maestro.mobile.dev | bash`)
+
+---
+
+## Multi-CLI Support
+
+The installer detects other AI coding CLIs on your system and optionally syncs your configured stack to each one. **No CLI is installed for you** — only tools already present are offered.
+
+| CLI | Detected by | What gets synced |
+|-----|-------------|-----------------|
+| **Claude Code** | `command -v claude` | MCP servers → `~/.claude/mcp.json` · Skills → `~/.claude/skills/` · Agents → `~/.claude/agents/` · Instructions → `~/.claude/CLAUDE.md` |
+| **Antigravity CLI** | `command -v agy` | MCP servers → `~/.gemini/antigravity-cli/mcp_config.json` · Skills → `~/.gemini/antigravity-cli/skills/` · Agents → `~/.gemini/antigravity-cli/agents/` · Instructions → `~/.gemini/GEMINI.md` |
+| **Codex CLI** | `command -v codex` | MCP servers → `~/.codex/config.toml` · Instructions + skills + agents → `~/.codex/AGENTS.md` |
+
+### Format translation
+
+Each CLI uses a different MCP config schema. The installer translates automatically:
+
+| opencode format | Claude Code | Antigravity CLI | Codex CLI |
+|----------------|-------------|-----------------|-----------|
+| `type: "local"`, `command: [...]` | `command` (string) + `args` array | `command` + `args` | `[mcp_servers.x]` TOML block |
+| `type: "remote"`, `url: "..."` | `type: "sse"`, `url` | `serverUrl` | `transport = "http"`, `url` |
+| `environment: {...}` | `env: {...}` | `env: {...}` | `[mcp_servers.x.env]` subtable |
+
+### Idempotency
+
+Instruction and skill content is written inside a sentinel block:
+
+```
+<!-- opencode-ultimate-setup:start -->
+...content...
+<!-- opencode-ultimate-setup:end -->
+```
+
+Re-running the installer **replaces** the block rather than appending, so there are no duplicates. All other content in `CLAUDE.md`, `GEMINI.md`, and `AGENTS.md` is left untouched.
+
+### Uninstall
+
+`make uninstall` includes a **Multi-CLI Sync Cleanup** step that removes only the MCP entries and sentinel blocks the installer added, leaving your existing content intact.
 
 ---
 

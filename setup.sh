@@ -272,7 +272,7 @@ printf "  ${DIM}Platform: %s${RESET}\n\n" "$OS_TYPE"
 # =============================================================================
 # STEP 1 -- Prerequisites
 # =============================================================================
-section "Prerequisites" 1 6
+section "Prerequisites" 1 7
 
 PREREQ_FAIL=0
 BASH_MAJOR="${BASH_VERSINFO[0]:-0}"; BASH_MINOR="${BASH_VERSINFO[1]:-0}"
@@ -310,7 +310,7 @@ refresh_npm_path
 # =============================================================================
 # STEP 2 -- Profile
 # =============================================================================
-section "Setup Profile" 2 6
+section "Setup Profile" 2 7
 
 if [ -z "$PROFILE" ] && [ "$NON_INTERACTIVE" = false ]; then
   printf "  ${BOLD}Choose a preset, or pick components manually:${RESET}\n\n"
@@ -335,7 +335,7 @@ success "Profile: ${BOLD}${PROFILE}${RESET}"
 # =============================================================================
 # STEP 3 -- Core engine
 # =============================================================================
-section "Core Engine" 3 6
+section "Core Engine" 3 7
 
 if npm_installed opencode-ai; then
   already "opencode-ai (core engine)"
@@ -381,7 +381,7 @@ fi
 # =============================================================================
 # STEP 4 -- Backend Pack
 # =============================================================================
-section "Backend Pack" 4 6
+section "Backend Pack" 4 7
 
 MCP_DOCKER=false
 MCP_SENTRY=false
@@ -1169,9 +1169,458 @@ NODE
 fi
 
 # =============================================================================
-# STEP 5 -- Provider authentication
+# STEP 5 -- Multi-CLI Sync
 # =============================================================================
-section "Provider Authentication" 5 6
+section "Multi-CLI Sync" 5 7
+printf "  ${BOLD}Sync stack to other detected AI coding CLIs.${RESET}\n"
+printf "  ${DIM}Only CLIs found on your system will be offered.${RESET}\n\n"
+
+_OCJSON="${OPENCODE_CONFIG_DIR}/opencode.json"
+_OUS_START="<!-- opencode-ultimate-setup:start -->"
+_OUS_END="<!-- opencode-ultimate-setup:end -->"
+
+_SYNC_MANIFEST="${OPENCODE_CONFIG_DIR}/.sync-manifest"
+[ "$DRY_RUN" = false ] && rm -f "$_SYNC_MANIFEST"
+
+_record_manifest() {
+  local _entry="$1"
+  if [ "$DRY_RUN" = true ]; then
+    detail "  [dry-run] Would log to manifest: ${_entry}"
+  else
+    echo "$_entry" >> "$_SYNC_MANIFEST"
+  fi
+}
+
+_transpile_agent() {
+  local _src="$1" _tgt="$2"
+  [ "$DRY_RUN" = true ] && return
+  SRC="$_src" TGT="$_tgt" node - <<'__TRANSPILE__'
+const fs = require('fs');
+const src = process.env.SRC;
+const tgt = process.env.TGT;
+const name = require('path').basename(src, '.md');
+let content = fs.readFileSync(src, 'utf8');
+if (!content.startsWith('---\n')) {
+  content = '---\nname: ' + name + '\ndescription: opencode ' + name + ' agent\n---\n\n' + content;
+}
+fs.writeFileSync(tgt, content);
+__TRANSPILE__
+}
+
+_transpile_agy_agent() {
+  local _src="$1" _tgt="$2"
+  [ "$DRY_RUN" = true ] && return
+  SRC="$_src" TGT="$_tgt" node - <<'__TRANSPILE_AGY__'
+const fs = require('fs');
+const path = require('path');
+const src = process.env.SRC;
+const tgt = process.env.TGT;
+const name = path.basename(src, '.md');
+let content = fs.readFileSync(src, 'utf8');
+const agentJson = {
+  name: name,
+  description: "opencode " + name + " agent",
+  hidden: false,
+  config: {
+    customAgent: {
+      systemPromptSections: [
+        {
+          title: "Agent System Instructions",
+          content: content
+        }
+      ],
+      systemPromptConfig: {
+        includeSections: [
+          "user_information",
+          "mcp_servers",
+          "skills",
+          "subagent_reminder",
+          "messaging",
+          "artifacts",
+          "user_rules"
+        ]
+      }
+    }
+  }
+};
+fs.mkdirSync(path.dirname(tgt), { recursive: true });
+fs.writeFileSync(tgt, JSON.stringify(agentJson, null, 2));
+__TRANSPILE_AGY__
+}
+
+# Upsert a sentinel-delimited block into a markdown file.
+# Replaces the existing block if found; appends if not.
+_write_sentinel_block() {
+  local _tgt="$1" _src="$2"
+  [ "$DRY_RUN" = true ] && { detail "  [dry-run] Would update sentinel block in $(basename "${_tgt}")"; return; }
+  OUS_TARGET="$_tgt" OUS_SRC="$_src" OUS_START="$_OUS_START" OUS_END="$_OUS_END" \
+  node - <<'__SENTINEL_NODE__'
+const fs   = require('fs');
+const tgt  = process.env.OUS_TARGET;
+const s    = process.env.OUS_START;
+const e    = process.env.OUS_END;
+const body = fs.readFileSync(process.env.OUS_SRC, 'utf8').trimEnd();
+const blk  = s + '\n' + body + '\n' + e;
+const cur  = fs.existsSync(tgt) ? fs.readFileSync(tgt, 'utf8') : '';
+const esc  = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const re   = new RegExp(esc(s) + '[\\s\\S]*?' + esc(e));
+const out  = re.test(cur) ? cur.replace(re, blk)
+                           : cur.trimEnd() + '\n\n' + blk + '\n';
+fs.writeFileSync(tgt, out);
+__SENTINEL_NODE__
+}
+
+# Render the opencode instructions array as markdown bullets to a file.
+_build_instructions_file() {
+  local _out="$1"
+  OC_JSON="$_OCJSON" node - > "$_out" <<'__INSTR_NODE__'
+const fs = require('fs');
+let d = {};
+try { d = JSON.parse(fs.readFileSync(process.env.OC_JSON, 'utf8')); } catch {}
+const items = (d.instructions || []).map(i => '- ' + i).join('\n');
+process.stdout.write('## opencode Ultimate Stack \u2014 System Instructions\n\n' + (items || '(none)') + '\n');
+__INSTR_NODE__
+}
+
+# ---------------------------------------------------------------------------
+# 5a. Claude Code
+# ---------------------------------------------------------------------------
+printf "  ${BOLD}Claude Code${RESET}\n"
+if command -v claude >/dev/null 2>&1; then
+  if prompt_yes_no "  Sync to Claude Code? (MCP + skills + instructions → ~/.claude/)"; then
+    _claude_dir="$HOME/.claude"
+    _claude_mcp="${_claude_dir}/mcp.json"
+    _claude_md="${_claude_dir}/CLAUDE.md"
+    _claude_skills="${_claude_dir}/skills"
+
+    # Record manifest entries
+    _mcp_keys=$(node -e "try { const d = require('fs').readFileSync('$_OCJSON', 'utf8'); console.log(Object.keys(JSON.parse(d).mcp || {}).join('\n')); } catch {}")
+    for k in $_mcp_keys; do
+      [ -n "$k" ] && _record_manifest "claude_mcp:$k"
+    done
+    if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
+      for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
+        [ -d "$_sd" ] && _record_manifest "claude_skill:$(basename "$_sd")"
+      done
+    fi
+    if [ -d "${OPENCODE_CONFIG_DIR}/agents" ]; then
+      for _ag in "${OPENCODE_CONFIG_DIR}/agents"/*.md; do
+        [ -f "$_ag" ] && _record_manifest "claude_agent:$(basename "$_ag")"
+      done
+    fi
+    _record_manifest "claude_sentinel:CLAUDE.md"
+
+    if [ "$DRY_RUN" = false ]; then
+      mkdir -p "$_claude_dir"
+
+      # MCP: translate opencode format → Claude Code (command+args split, env key)
+      _mcp_tmp=$(mktemp)
+      OC_JSON="$_OCJSON" CLAUDE_MCP="$_claude_mcp" MCP_COUNT_FILE="$_mcp_tmp" node - <<'__CLAUDE_MCP__'
+const fs = require('fs');
+let src = {};
+try { src = JSON.parse(fs.readFileSync(process.env.OC_JSON, 'utf8')); } catch {}
+let dst = {};
+try { if (fs.existsSync(process.env.CLAUDE_MCP)) dst = JSON.parse(fs.readFileSync(process.env.CLAUDE_MCP, 'utf8')); } catch {}
+if (!dst.mcpServers || typeof dst.mcpServers !== 'object') dst.mcpServers = {};
+const mcp = (src.mcp && typeof src.mcp === 'object') ? src.mcp : {};
+Object.entries(mcp).forEach(([k, v]) => {
+  if (v.enabled === false) return;
+  const out = {};
+  if (v.type === 'remote') {
+    out.type = 'sse'; out.url = v.url;
+  } else {
+    const cmd = Array.isArray(v.command) ? v.command : [v.command];
+    out.command = cmd[0];
+    if (cmd.length > 1) out.args = cmd.slice(1);
+  }
+  if (v.environment && Object.keys(v.environment).length) out.env = v.environment;
+  dst.mcpServers[k] = out;
+});
+fs.writeFileSync(process.env.CLAUDE_MCP, JSON.stringify(dst, null, 2));
+require('fs').writeFileSync(process.env.MCP_COUNT_FILE, String(Object.keys(dst.mcpServers).length));
+__CLAUDE_MCP__
+      _n=$(cat "$_mcp_tmp" 2>/dev/null || echo 0); rm -f "$_mcp_tmp"
+      detail "  ${_n} MCP server(s) → ${_claude_mcp}"
+
+      # Skills: direct copy (Claude Code uses the same directory structure as opencode)
+      if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
+        mkdir -p "$_claude_skills"
+        _cnt=0
+        for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
+          [ -d "$_sd" ] || continue
+          _sname=$(basename "$_sd")
+          if [ -d "${_claude_skills}/${_sname}" ]; then
+            rm -rf "${_claude_skills}/${_sname}"
+          fi
+          cp -r "$_sd" "${_claude_skills}/${_sname}"
+          _cnt=$((_cnt+1))
+        done
+        [ "$_cnt" -gt 0 ] && detail "  ${_cnt} skill(s) → ${_claude_skills}"
+      fi
+
+      # Agents: copy opencode agents to Claude Code agents directory
+      if [ -d "${OPENCODE_CONFIG_DIR}/agents" ]; then
+        _claude_agents="${_claude_dir}/agents"
+        mkdir -p "$_claude_agents"
+        _cnt=0
+        for _ag in "${OPENCODE_CONFIG_DIR}/agents"/*.md; do
+          [ -f "$_ag" ] || continue
+          _aname=$(basename "$_ag")
+          _atarget="${_claude_agents}/${_aname}"
+          if [ -f "$_atarget" ]; then
+            rm -f "$_atarget"
+          fi
+          _transpile_agent "$_ag" "$_atarget"
+          _cnt=$((_cnt+1))
+        done
+        [ "$_cnt" -gt 0 ] && detail "  ${_cnt} agent(s) → ${_claude_agents}"
+      fi
+
+      # Instructions: idempotent sentinel block in CLAUDE.md
+      touch "$_claude_md"
+      _tmp_i=$(mktemp)
+      _build_instructions_file "$_tmp_i"
+      _write_sentinel_block "$_claude_md" "$_tmp_i"
+      rm -f "$_tmp_i"
+    fi
+
+    success "  Claude Code synced"
+    mark_installed "Claude Code sync"
+  else
+    mark_skipped "Claude Code sync"
+  fi
+else
+  detail "  claude not found -- skipping"
+  mark_skipped "Claude Code sync"
+fi
+
+printf "\n"
+
+# ---------------------------------------------------------------------------
+# 5b. Antigravity CLI
+# ---------------------------------------------------------------------------
+printf "  ${BOLD}Antigravity CLI${RESET}\n"
+if command -v agy >/dev/null 2>&1; then
+  if prompt_yes_no "  Sync to Antigravity CLI? (MCP + skills → ~/.gemini/antigravity-cli/ + GEMINI.md)"; then
+    _agy_mcp="$HOME/.gemini/antigravity-cli/mcp_config.json"
+    _agy_skills="$HOME/.gemini/antigravity-cli/skills"
+    _agy_md="$HOME/.gemini/GEMINI.md"
+
+    # Record manifest entries
+    _mcp_keys=$(node -e "try { const d = require('fs').readFileSync('$_OCJSON', 'utf8'); console.log(Object.keys(JSON.parse(d).mcp || {}).join('\n')); } catch {}")
+    for k in $_mcp_keys; do
+      [ -n "$k" ] && _record_manifest "agy_mcp:$k"
+    done
+    if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
+      for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
+        [ -d "$_sd" ] && _record_manifest "agy_skill:$(basename "$_sd")"
+      done
+    fi
+    if [ -d "${OPENCODE_CONFIG_DIR}/agents" ]; then
+      for _ag in "${OPENCODE_CONFIG_DIR}/agents"/*.md; do
+        [ -f "$_ag" ] && _record_manifest "agy_agent:$(basename "$_ag")"
+      done
+    fi
+    _record_manifest "agy_sentinel:GEMINI.md"
+
+    if [ "$DRY_RUN" = false ]; then
+      mkdir -p "$(dirname "$_agy_mcp")"
+
+      # MCP: translate opencode format → Antigravity mcpServers (serverUrl for remote servers)
+      _mcp_tmp=$(mktemp)
+      OC_JSON="$_OCJSON" AGY_MCP="$_agy_mcp" MCP_COUNT_FILE="$_mcp_tmp" node - <<'__AGY_MCP__'
+const fs = require('fs');
+let src = {};
+try { src = JSON.parse(fs.readFileSync(process.env.OC_JSON, 'utf8')); } catch {}
+let dst = {};
+try { if (fs.existsSync(process.env.AGY_MCP)) dst = JSON.parse(fs.readFileSync(process.env.AGY_MCP, 'utf8')); } catch {}
+if (!dst.mcpServers || typeof dst.mcpServers !== 'object') dst.mcpServers = {};
+const mcp = (src.mcp && typeof src.mcp === 'object') ? src.mcp : {};
+Object.entries(mcp).forEach(([k, v]) => {
+  if (v.enabled === false) return;
+  const out = {};
+  if (v.type === 'remote') {
+    // Antigravity uses serverUrl (not url or type:http) for remote MCP servers
+    out.serverUrl = v.url;
+  } else {
+    const cmd = Array.isArray(v.command) ? v.command : [v.command];
+    out.command = cmd[0];
+    if (cmd.length > 1) out.args = cmd.slice(1);
+  }
+  if (v.environment && Object.keys(v.environment).length) out.env = v.environment;
+  dst.mcpServers[k] = out;
+});
+fs.writeFileSync(process.env.AGY_MCP, JSON.stringify(dst, null, 2));
+fs.writeFileSync(process.env.MCP_COUNT_FILE, String(Object.keys(dst.mcpServers).length));
+__AGY_MCP__
+      _n=$(cat "$_mcp_tmp" 2>/dev/null || echo 0); rm -f "$_mcp_tmp"
+      detail "  ${_n} MCP server(s) → ${_agy_mcp}"
+
+      # Instructions: idempotent sentinel block in GEMINI.md
+      touch "$_agy_md"
+      _tmp_i=$(mktemp)
+      _build_instructions_file "$_tmp_i"
+      _write_sentinel_block "$_agy_md" "$_tmp_i"
+      rm -f "$_tmp_i"
+      detail "  Instructions block → $(basename "$_agy_md")"
+
+      # Skills: copy opencode skills to Antigravity global skills directory
+      if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
+        mkdir -p "$_agy_skills"
+        _cnt=0
+        for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
+          [ -d "$_sd" ] || continue
+          _sname=$(basename "$_sd")
+          if [ -d "${_agy_skills}/${_sname}" ]; then
+            rm -rf "${_agy_skills}/${_sname}"
+          fi
+          cp -r "$_sd" "${_agy_skills}/${_sname}"
+          _cnt=$((_cnt+1))
+        done
+        [ "$_cnt" -gt 0 ] && detail "  ${_cnt} skill(s) → ${_agy_skills}"
+      fi
+
+      # Agents: copy opencode agents to Antigravity agents directory as agent.json
+      if [ -d "${OPENCODE_CONFIG_DIR}/agents" ]; then
+        _agy_agents="$HOME/.gemini/antigravity-cli/agents"
+        mkdir -p "$_agy_agents"
+        _cnt=0
+        for _ag in "${OPENCODE_CONFIG_DIR}/agents"/*.md; do
+          [ -f "$_ag" ] || continue
+          _aname=$(basename "$_ag" .md)
+          _atarget="${_agy_agents}/${_aname}/agent.json"
+          if [ -f "$_atarget" ]; then
+            continue
+          fi
+          _transpile_agy_agent "$_ag" "$_atarget"
+          _cnt=$((_cnt+1))
+        done
+        [ "$_cnt" -gt 0 ] && detail "  ${_cnt} agent(s) → ${_agy_agents}"
+      fi
+    fi
+
+    success "  Antigravity CLI synced"
+    mark_installed "Antigravity CLI sync"
+  else
+    mark_skipped "Antigravity CLI sync"
+  fi
+else
+  detail "  agy not found -- skipping"
+  mark_skipped "Antigravity CLI sync"
+fi
+
+printf "\n"
+
+# ---------------------------------------------------------------------------
+# 5c. Codex CLI
+# ---------------------------------------------------------------------------
+printf "  ${BOLD}Codex CLI${RESET}\n"
+if command -v codex >/dev/null 2>&1; then
+  if prompt_yes_no "  Sync to Codex CLI? (MCP → ~/.codex/config.toml + skills + agents → ~/.codex/AGENTS.md)"; then
+    _codex_dir="$HOME/.codex"
+    _codex_cfg="${_codex_dir}/config.toml"
+    _codex_agents="${_codex_dir}/AGENTS.md"
+
+    # Record manifest entries
+    _mcp_keys=$(node -e "try { const d = require('fs').readFileSync('$_OCJSON', 'utf8'); console.log(Object.keys(JSON.parse(d).mcp || {}).join('\n')); } catch {}")
+    for k in $_mcp_keys; do
+      [ -n "$k" ] && _record_manifest "codex_mcp:$k"
+    done
+    _record_manifest "codex_sentinel:AGENTS.md"
+
+    if [ "$DRY_RUN" = false ]; then
+      mkdir -p "$_codex_dir"
+
+      # MCP: translate opencode format → Codex TOML [mcp_servers.*] tables (idempotent strip+rewrite)
+      _mcp_tmp=$(mktemp)
+      OC_JSON="$_OCJSON" CODEX_CFG="$_codex_cfg" MCP_COUNT_FILE="$_mcp_tmp" node - <<'__CODEX_MCP__'
+const fs = require('fs');
+let src = {};
+try { src = JSON.parse(fs.readFileSync(process.env.OC_JSON, 'utf8')); } catch {}
+const mcp = (src.mcp && typeof src.mcp === 'object') ? src.mcp : {};
+let existing = '';
+try { if (fs.existsSync(process.env.CODEX_CFG)) existing = fs.readFileSync(process.env.CODEX_CFG, 'utf8'); } catch {}
+// Strip any existing [mcp_servers.*] TOML tables so re-runs are idempotent
+const lines = existing.split('\n');
+let out = [];
+let skip = false;
+for (const line of lines) {
+  const m = line.match(/^\[([^\]]+)\]/);
+  if (m) {
+    if (m[1].startsWith('mcp_servers.')) skip = true;
+    else skip = false;
+  }
+  if (!skip) out.push(line);
+}
+existing = out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd();
+let toml = '';
+let count = 0;
+Object.entries(mcp).forEach(([key, v]) => {
+  if (v.enabled === false) return;
+  const k = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+  toml += '\n[mcp_servers.' + k + ']\n';
+  if (v.type === 'remote') {
+    toml += 'transport = "http"\n';
+    toml += 'url = "' + v.url + '"\n';
+  } else {
+    const cmd = Array.isArray(v.command) ? v.command : [v.command];
+    const esc = s => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    toml += 'command = "' + esc(cmd[0]) + '"\n';
+    if (cmd.length > 1) toml += 'args = [' + cmd.slice(1).map(a => '"' + esc(a) + '"').join(', ') + ']\n';
+  }
+  if (v.environment && Object.keys(v.environment).length) {
+    toml += '\n[mcp_servers.' + k + '.env]\n';
+    Object.entries(v.environment).forEach(([ek, ev]) => {
+      const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      toml += ek + ' = "' + esc(ev) + '"\n';
+    });
+  }
+  count++;
+});
+fs.writeFileSync(process.env.CODEX_CFG, (existing ? existing + '\n' : '') + toml);
+fs.writeFileSync(process.env.MCP_COUNT_FILE, String(count));
+__CODEX_MCP__
+      _n=$(cat "$_mcp_tmp" 2>/dev/null || echo 0); rm -f "$_mcp_tmp"
+      detail "  ${_n} MCP server(s) → ${_codex_cfg}"
+
+      # AGENTS.md: sentinel block containing instructions + concatenated skill SKILL.md files
+      _tmp_a=$(mktemp)
+      _build_instructions_file "$_tmp_a"
+      if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
+        for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
+          [ -d "$_sd" ] || continue
+          _skill_md="${_sd}SKILL.md"
+          [ -f "$_skill_md" ] || continue
+          printf '\n---\n\n## Skill: %s\n\n' "$(basename "$_sd")" >> "$_tmp_a"
+          cat "$_skill_md" >> "$_tmp_a"
+        done
+      fi
+      if [ -d "${OPENCODE_CONFIG_DIR}/agents" ]; then
+        for _ag in "${OPENCODE_CONFIG_DIR}/agents"/*.md; do
+          [ -f "$_ag" ] || continue
+          printf '\n---\n\n## Agent: %s\n\n' "$(basename "$_ag" .md)" >> "$_tmp_a"
+          cat "$_ag" >> "$_tmp_a"
+        done
+      fi
+      touch "$_codex_agents"
+      _write_sentinel_block "$_codex_agents" "$_tmp_a"
+      rm -f "$_tmp_a"
+    fi
+
+    success "  Codex CLI synced"
+    mark_installed "Codex CLI sync"
+  else
+    mark_skipped "Codex CLI sync"
+  fi
+else
+  detail "  codex not found -- skipping"
+  mark_skipped "Codex CLI sync"
+fi
+
+# =============================================================================
+# STEP 6 -- Provider authentication
+# =============================================================================
+section "Provider Authentication" 6 7
 
 printf "  ${BOLD}Configure your AI providers.${RESET}\n"
 printf "  ${DIM}At least one provider is required to use opencode.${RESET}\n\n"
@@ -1274,7 +1723,7 @@ fi
 # =============================================================================
 # STEP 6 -- Summary
 # =============================================================================
-section "Summary" 6 6
+section "Summary" 7 7
 
 if [ "${#INSTALLED[@]}" -gt 0 ]; then
   printf "  ${BOLD}Installed / confirmed${RESET}\n"
