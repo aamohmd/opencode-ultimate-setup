@@ -184,7 +184,7 @@ _manifest="${OPENCODE_CONFIG_DIR}/.sync-manifest"
 
 if [ ! -f "$_manifest" ]; then
   warn "No .sync-manifest found. Cannot safely determine which external files to clean up."
-  detail "Please manually check ~/.claude/, ~/.gemini/antigravity-cli/, and ~/.codex/ for opencode entries."
+  detail "Please manually check ~/.claude/, ~/.gemini/antigravity*/, and ~/.codex/ for opencode entries."
 else
   if prompt_yes_no "  Remove opencode entries from synced CLIs using manifest?" "N"; then
     _claude_mcp_keys=""
@@ -208,14 +208,14 @@ else
           ;;
         agy_mcp) _agy_mcp_keys="${_agy_mcp_keys}${target}," ;;
         agy_skill)
-          rm -rf "$HOME/.gemini/antigravity-cli/skills/$target"
-          detail "  Removed Antigravity CLI skill: $target"
+          for _dir in "antigravity" "antigravity-cli" "antigravity-ide" "config"; do
+            if [ -d "$HOME/.gemini/$_dir/skills/$target" ]; then
+              rm -rf "$HOME/.gemini/$_dir/skills/$target"
+              detail "  Removed Antigravity skill: $target from $_dir"
+            fi
+          done
           ;;
-        agy_agent)
-          _target_dir="${target%.md}"
-          rm -rf "$HOME/.gemini/antigravity-cli/agents/$_target_dir"
-          detail "  Removed Antigravity CLI agent: $_target_dir"
-          ;;
+
         agy_sentinel)
           _remove_sentinel_block "$HOME/.gemini/$target"
           ;;
@@ -240,8 +240,10 @@ __RM_CLAUDE_MCP__
       detail "  Removed opencode MCP entries from ~/.claude/mcp.json"
     fi
 
-    if [ -n "$_agy_mcp_keys" ] && [ -f "$HOME/.gemini/antigravity-cli/mcp_config.json" ]; then
-      KEYS="$_agy_mcp_keys" TARGET="$HOME/.gemini/antigravity-cli/mcp_config.json" node - <<'__RM_AGY_MCP__'
+    if [ -n "$_agy_mcp_keys" ]; then
+      for _dir in "antigravity" "antigravity-cli" "antigravity-ide" "config"; do
+        if [ -f "$HOME/.gemini/$_dir/mcp_config.json" ]; then
+          KEYS="$_agy_mcp_keys" TARGET="$HOME/.gemini/$_dir/mcp_config.json" node - <<'__RM_AGY_MCP__'
 const fs = require('fs');
 try {
   let ag = JSON.parse(fs.readFileSync(process.env.TARGET, 'utf8'));
@@ -250,7 +252,9 @@ try {
   fs.writeFileSync(process.env.TARGET, JSON.stringify(ag, null, 2));
 } catch {}
 __RM_AGY_MCP__
-      detail "  Removed opencode MCP entries from ~/.gemini/antigravity-cli/mcp_config.json"
+          detail "  Removed opencode MCP entries from ~/.gemini/$_dir/mcp_config.json"
+        fi
+      done
     fi
 
     if [ -n "$_codex_mcp_keys" ] && [ -f "$HOME/.codex/config.toml" ]; then

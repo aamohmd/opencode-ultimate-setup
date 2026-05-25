@@ -1235,7 +1235,7 @@ if (isTrue(process.env.MCP_MEMORY)) {
   d.mcp['memory'] = { type: 'local', command: ['engram', 'mcp'], enabled: true };
 }
 if (isTrue(process.env.MCP_SQLITE)) {
-  d.mcp['sqlite'] = { type: 'local', command: ['uvx', 'mcp-server-sqlite'], enabled: true };
+  d.mcp['sqlite'] = { type: 'local', command: ['uvx', 'mcp-server-sqlite', '--db-path', (process.env.HOME || '') + '/.gemini/config/sqlite.db'], enabled: true };
 }
 if (isTrue(process.env.MCP_TIME)) {
   d.mcp['time'] = { type: 'local', command: ['uvx', 'mcp-server-time'], enabled: true };
@@ -1244,6 +1244,17 @@ if (isTrue(process.env.MCP_FILESYSTEM)) {
   const homeDir = process.env.HOME || '/';
   d.mcp['filesystem'] = { type: 'local', command: ['npx', '-y', '@modelcontextprotocol/server-filesystem', homeDir, '/'], enabled: true };
 }
+
+Object.keys(d.mcp).forEach(k => {
+  if (d.mcp[k].type !== 'remote' && typeof d.mcp[k].command === 'string') {
+    if (Array.isArray(d.mcp[k].args)) {
+      d.mcp[k].command = [d.mcp[k].command, ...d.mcp[k].args];
+      delete d.mcp[k].args;
+    } else {
+      d.mcp[k].command = [d.mcp[k].command];
+    }
+  }
+});
 
 fs.mkdirSync(configDir, { recursive: true });
 fs.writeFileSync(opencodePath, JSON.stringify(d, null, 2));
@@ -1262,10 +1273,15 @@ NODE
   fi
 
   if [ "$MCP_MEMORY" = true ] && [ "$DRY_RUN" = false ]; then
-    AG_MCP_CONFIG="$HOME/.gemini/antigravity-cli/mcp_config.json"
-    mkdir -p "$(dirname "$AG_MCP_CONFIG")"
-    echo '{ "mcpServers": { "engram": { "command": "engram", "args": ["mcp"] } } }' > "$AG_MCP_CONFIG"
-    success "Configured Antigravity CLI to share Engram memory"
+    for _dir in "antigravity" "antigravity-cli" "antigravity-ide" "config"; do
+      _agy_dir="$HOME/.gemini/$_dir"
+      if [ -d "$_agy_dir" ]; then
+        AG_MCP_CONFIG="${_agy_dir}/mcp_config.json"
+        mkdir -p "$(dirname "$AG_MCP_CONFIG")"
+        echo '{ "mcpServers": { "engram": { "command": "engram", "args": ["mcp"] } } }' > "$AG_MCP_CONFIG"
+      fi
+    done
+    success "Configured Antigravity IDE & CLI to share Engram memory"
   fi
 fi
 
@@ -1306,47 +1322,6 @@ if (!content.startsWith('---\n')) {
 }
 fs.writeFileSync(tgt, content);
 __TRANSPILE__
-}
-
-_transpile_agy_agent() {
-  local _src="$1" _tgt="$2"
-  [ "$DRY_RUN" = true ] && return
-  SRC="$_src" TGT="$_tgt" node - <<'__TRANSPILE_AGY__'
-const fs = require('fs');
-const path = require('path');
-const src = process.env.SRC;
-const tgt = process.env.TGT;
-const name = path.basename(src, '.md');
-let content = fs.readFileSync(src, 'utf8');
-const agentJson = {
-  name: name,
-  description: "opencode " + name + " agent",
-  hidden: false,
-  config: {
-    customAgent: {
-      systemPromptSections: [
-        {
-          title: "Agent System Instructions",
-          content: content
-        }
-      ],
-      systemPromptConfig: {
-        includeSections: [
-          "user_information",
-          "mcp_servers",
-          "skills",
-          "subagent_reminder",
-          "messaging",
-          "artifacts",
-          "user_rules"
-        ]
-      }
-    }
-  }
-};
-fs.mkdirSync(path.dirname(tgt), { recursive: true });
-fs.writeFileSync(tgt, JSON.stringify(agentJson, null, 2));
-__TRANSPILE_AGY__
 }
 
 # Upsert a sentinel-delimited block into a markdown file.
@@ -1498,38 +1473,56 @@ fi
 printf "\n"
 
 # ---------------------------------------------------------------------------
-# 5b. Antigravity CLI
+# 5b. Antigravity IDE & CLI
 # ---------------------------------------------------------------------------
-printf "  ${BOLD}Antigravity CLI${RESET}\n"
-if command -v agy >/dev/null 2>&1; then
-  if prompt_yes_no "  Sync to Antigravity CLI? (MCP + skills → ~/.gemini/antigravity-cli/ + GEMINI.md)"; then
-    _agy_mcp="$HOME/.gemini/antigravity-cli/mcp_config.json"
-    _agy_skills="$HOME/.gemini/antigravity-cli/skills"
+printf "  ${BOLD}Antigravity IDE & CLI${RESET}\n"
+if command -v agy >/dev/null 2>&1 || [ -d "$HOME/.gemini/antigravity-ide" ] || [ -d "$HOME/.gemini/antigravity" ] || [ -d "$HOME/.gemini/antigravity-cli" ]; then
+  if prompt_yes_no "  Sync to Antigravity IDE & CLI? (MCP + skills → ~/.gemini/antigravity*/ + GEMINI.md)"; then
     _agy_md="$HOME/.gemini/GEMINI.md"
 
-    # Record manifest entries
-    _mcp_keys=$(node -e "try { const d = require('fs').readFileSync('$_OCJSON', 'utf8'); console.log(Object.keys(JSON.parse(d).mcp || {}).join('\n')); } catch {}")
-    for k in $_mcp_keys; do
-      [ -n "$k" ] && _record_manifest "agy_mcp:$k"
-    done
-    if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
-      for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
-        [ -d "$_sd" ] && _record_manifest "agy_skill:$(basename "$_sd")"
-      done
-    fi
-    if [ -d "${OPENCODE_CONFIG_DIR}/agents" ]; then
-      for _ag in "${OPENCODE_CONFIG_DIR}/agents"/*.md; do
-        [ -f "$_ag" ] && _record_manifest "agy_agent:$(basename "$_ag")"
-      done
-    fi
+    # Record instructions sentinel
     _record_manifest "agy_sentinel:GEMINI.md"
 
     if [ "$DRY_RUN" = false ]; then
-      mkdir -p "$(dirname "$_agy_mcp")"
+      # Instructions: idempotent sentinel block in GEMINI.md
+      touch "$_agy_md"
+      _tmp_i=$(mktemp)
+      _build_instructions_file "$_tmp_i"
+      _write_sentinel_block "$_agy_md" "$_tmp_i"
+      rm -f "$_tmp_i"
+      detail "  Instructions block → $(basename "$_agy_md")"
+    fi
 
-      # MCP: translate opencode format → Antigravity mcpServers (serverUrl for remote servers)
-      _mcp_tmp=$(mktemp)
-      OC_JSON="$_OCJSON" AGY_MCP="$_agy_mcp" MCP_COUNT_FILE="$_mcp_tmp" node - <<'__AGY_MCP__'
+    _agy_synced_count=0
+    for _dir in "antigravity" "antigravity-cli" "antigravity-ide" "config"; do
+      _agy_base="$HOME/.gemini/$_dir"
+      if [ ! -d "$_agy_base" ]; then
+        continue
+      fi
+      
+      _agy_synced_count=$((_agy_synced_count+1))
+      _agy_mcp="$_agy_base/mcp_config.json"
+      _agy_skills="$_agy_base/skills"
+      _agy_agents="$_agy_base/agents"
+
+      # Record manifest entries
+      _mcp_keys=$(node -e "try { const d = require('fs').readFileSync('$_OCJSON', 'utf8'); console.log(Object.keys(JSON.parse(d).mcp || {}).join('\n')); } catch {}")
+      for k in $_mcp_keys; do
+        [ -n "$k" ] && _record_manifest "agy_mcp:$k"
+      done
+      if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
+        for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
+          [ -d "$_sd" ] && _record_manifest "agy_skill:$(basename "$_sd")"
+        done
+      fi
+
+
+      if [ "$DRY_RUN" = false ]; then
+        mkdir -p "$(dirname "$_agy_mcp")"
+
+        # MCP: translate opencode format → Antigravity mcpServers (serverUrl for remote servers)
+        _mcp_tmp=$(mktemp)
+        OC_JSON="$_OCJSON" AGY_MCP="$_agy_mcp" MCP_COUNT_FILE="$_mcp_tmp" node - <<'__AGY_MCP__'
 const fs = require('fs');
 let src = {};
 try { src = JSON.parse(fs.readFileSync(process.env.OC_JSON, 'utf8')); } catch {}
@@ -1554,60 +1547,42 @@ Object.entries(mcp).forEach(([k, v]) => {
 fs.writeFileSync(process.env.AGY_MCP, JSON.stringify(dst, null, 2));
 fs.writeFileSync(process.env.MCP_COUNT_FILE, String(Object.keys(dst.mcpServers).length));
 __AGY_MCP__
-      _n=$(cat "$_mcp_tmp" 2>/dev/null || echo 0); rm -f "$_mcp_tmp"
-      detail "  ${_n} MCP server(s) → ${_agy_mcp}"
+        _n=$(cat "$_mcp_tmp" 2>/dev/null || echo 0); rm -f "$_mcp_tmp"
+        detail "  ${_n} MCP server(s) → ${_agy_mcp}"
 
-      # Instructions: idempotent sentinel block in GEMINI.md
-      touch "$_agy_md"
-      _tmp_i=$(mktemp)
-      _build_instructions_file "$_tmp_i"
-      _write_sentinel_block "$_agy_md" "$_tmp_i"
-      rm -f "$_tmp_i"
-      detail "  Instructions block → $(basename "$_agy_md")"
+        # Skills: copy opencode skills to Antigravity global skills directory
+        if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
+          mkdir -p "$_agy_skills"
+          _cnt=0
+          for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
+            [ -d "$_sd" ] || continue
+            _sname=$(basename "$_sd")
+            if [ -d "${_agy_skills}/${_sname}" ]; then
+              rm -rf "${_agy_skills}/${_sname}"
+            fi
+            cp -r "$_sd" "${_agy_skills}/${_sname}"
+            _cnt=$((_cnt+1))
+          done
+          [ "$_cnt" -gt 0 ] && detail "  ${_cnt} skill(s) → ${_agy_skills}"
+        fi
 
-      # Skills: copy opencode skills to Antigravity global skills directory
-      if [ -d "${OPENCODE_CONFIG_DIR}/skills" ]; then
-        mkdir -p "$_agy_skills"
-        _cnt=0
-        for _sd in "${OPENCODE_CONFIG_DIR}/skills"/*/; do
-          [ -d "$_sd" ] || continue
-          _sname=$(basename "$_sd")
-          if [ -d "${_agy_skills}/${_sname}" ]; then
-            rm -rf "${_agy_skills}/${_sname}"
-          fi
-          cp -r "$_sd" "${_agy_skills}/${_sname}"
-          _cnt=$((_cnt+1))
-        done
-        [ "$_cnt" -gt 0 ] && detail "  ${_cnt} skill(s) → ${_agy_skills}"
+
       fi
+    done
 
-      # Agents: copy opencode agents to Antigravity agents directory as agent.json
-      if [ -d "${OPENCODE_CONFIG_DIR}/agents" ]; then
-        _agy_agents="$HOME/.gemini/antigravity-cli/agents"
-        mkdir -p "$_agy_agents"
-        _cnt=0
-        for _ag in "${OPENCODE_CONFIG_DIR}/agents"/*.md; do
-          [ -f "$_ag" ] || continue
-          _aname=$(basename "$_ag" .md)
-          _atarget="${_agy_agents}/${_aname}/agent.json"
-          if [ -f "$_atarget" ]; then
-            continue
-          fi
-          _transpile_agy_agent "$_ag" "$_atarget"
-          _cnt=$((_cnt+1))
-        done
-        [ "$_cnt" -gt 0 ] && detail "  ${_cnt} agent(s) → ${_agy_agents}"
-      fi
+    if [ "$_agy_synced_count" -gt 0 ]; then
+      success "  Antigravity IDE & CLI synced"
+      mark_installed "Antigravity sync"
+    else
+      warn "  No Antigravity data directories found."
+      mark_skipped "Antigravity sync"
     fi
-
-    success "  Antigravity CLI synced"
-    mark_installed "Antigravity CLI sync"
   else
-    mark_skipped "Antigravity CLI sync"
+    mark_skipped "Antigravity sync"
   fi
 else
-  detail "  agy not found -- skipping"
-  mark_skipped "Antigravity CLI sync"
+  detail "  agy / IDE not found -- skipping"
+  mark_skipped "Antigravity sync"
 fi
 
 printf "\n"

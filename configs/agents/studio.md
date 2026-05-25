@@ -52,7 +52,7 @@ When asked to build a landing page, follow this order:
 7. Screenshot at 1440px after each section, compare to references, iterate
 
 ## Rules
-1. Load the `gsap-scroll-patterns` skill before writing any scroll animation
+1. Load the gsap skills before writing any scroll animation
 2. Always use named scroll patterns — never invent scroll behavior from scratch
 3. Install GSAP + Lenis + Motion as project dependencies, never globally
 4. Validate accessibility (contrast ratios, keyboard navigation, reduced-motion media query)
